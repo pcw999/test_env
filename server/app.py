@@ -84,7 +84,7 @@ def get_info():
     port = request.environ['REMOTE_PORT']
 
     # 상대 주소 전송 (서버 -> client의 webpage)
-    emit('my_port', {'myport': port}, to=request.sid)
+    emit('my_address', {'my_ip': ip_addr, 'my_port': port}, to=request.sid)
     emit('opponent_address', {'ip_addr' : ip_addr, 'port' : port}, broadcast=True, include_self=False)
 
 # 소켓 테스트용 1초마다 시간 쏴주는 함수

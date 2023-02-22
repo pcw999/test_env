@@ -48,9 +48,9 @@
             socket.emit('opponent_address', { 'ip_addr': data['ip_addr'], 'port': data['port'] })
         })
 
-        server_socket.on('my_port', function (data) {
-            console.log(data['myport'])
-            socket.emit('my_port', {'myport': data['myport'] })
+        server_socket.on('my_address', function (data) {
+            console.log(data['my_address'])
+            socket.emit('my_address', {'my_ip': data['my_ip'], 'my_port': data['my_port']})
         })
 
         server_socket.on('time', function (data) {

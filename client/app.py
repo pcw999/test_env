@@ -207,6 +207,7 @@ def test_disconnect():
 def set_address(data):
     global UDP_IP
     global UDP_PORT
+    global MY_PORT
     UDP_IP = data['ip_addr']
     UDP_PORT = data['port']
 
@@ -215,7 +216,7 @@ def set_address(data):
 
     # data test
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    sock.bind(('0.0.0.0', UDP_PORT))
+    sock.bind(('0.0.0.0', MY_PORT))
     sock.settimeout(0.01)
 
     i = 0

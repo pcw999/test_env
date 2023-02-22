@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Real-time Dots</title>
+</head>
+
+<body>
+  <h1>Join to Start Game</h1>
+  <hr>
+  <button id="joinButton">Join</button>
+  <h2 id="isMatched"></h2>
+  <h2 id="alarm"></h2>
+  <script src="//code.jquery.com/jquery-1.11.1.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.6.0/socket.io.min.js"></script>
+  <script>
+    $(document).ready(function () {
+      // Connect to the server
+      // var socket = io.connect('http://krafton604.iptime.org');
+      var socket = io.connect('192.168.0.5:8088');
+
+      // Handle reset button click event
+      $('#joinButton').click(function (event) {
+        socket.emit('join');
+      });
+
+      socket.on('waiting', function(data) {
+        console.log("waiting...")
+        console.log(data)
+        $("#isMatched").text("waiting...");
+        $("#alarm").text("user : " + data['sid'] + " entered room : " + data['room_id']);
+      });
+
+      socket.on('matched', function(data) {
+        console.log("matched!");
+        console.log(data)
+        $("#isMatched").text("matched!!!");
+        $("#alarm").text("user : " + data['sid'] + " entered room : " + data['room_id']);
+      });
+      
+      socket.on('start-game', function(data) {
+        console.log(data)
+        let url = '/enter_snake?room_id=' + data['room_id'] + '&sid=' + data['sid'];
+        console.log(url)
+        window.location.href = url;
+      });
+    });
+  </script>
+</body>
+
+</html>

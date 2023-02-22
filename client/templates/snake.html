@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>SNAKE</title>
+    <script src="//code.jquery.com/jquery-1.12.4.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.6.0/socket.io.min.js"></script>
+</head>
+<body>
+<h1>snake.html</h1>
+<div><h1 style="display: inline;">SCORE : </h1><h1 style="display: inline;" id="score">0</h1></div>
+
+<img src="{{ url_for('snake') }}" />
+<div><a>head_x 좌표 : </a><a id="head_x"></a></div>
+<div><a>head_y 좌표 : </a><a id="head_y"></a></div>
+<div><a>몸통 리스트 : </a><a id="body_node"></a></div>
+<div id="time"></div>
+<div><a>상대 head_x 좌표 : </a><a id="opp_head_x"></a></div>
+<div><a>상대 head_y 좌표 : </a><a id="opp_head_y"></a></div>
+<div><a>상대 몸통 리스트 : </a><a id="opp_body_node"></a></div>
+<div><a>상대 스코어 : </a><a id="opp_score"></a></div>
+<div><a>상대 room_id : </a><a id="opp_room_id"></a></div>
+<div><a>상대 sid : </a><a id="opp_sid"></a></div>
+<script>
+    var socket = io.connect('http://' + document.domain + ':' + location.port);
+    // var socket2 = io.connect('http://krafton604.iptime.org');
+    var server_socket = io.connect('192.168.0.5:8088');
+    
+    let room_id = "{{room_id}}"
+    let sid = "{{sid}}"
+
+    console.log(room_id);
+    console.log(sid);
+    server_socket.on('connect', function() {
+        server_socket.emit('get_time');
+    });
+    server_socket.on('time', function(data) {
+        $('#time').html(data['time']);
+    });
+
+    socket.on('game_data', function(data) {
+        $('#head_x').text(data['head_x']);
+        $('#head_y').text(data['head_y']);
+        $('#body_node').text(data['body_node']);
+        $('#score').text(data['score']);
+        // console.log(data)
+        server_socket.emit('send_data', {'head_x' : data['head_x'], 'head_y' : data['head_y'], 'body_node' : data['body_node'], 'score' : data['score'], 'room_id' : room_id, 'sid' : sid})
+    });
+    server_socket.on('opp_data', function(data) {
+        console.log(data)
+
+        if (sid != data['opp_sid']) {
+            $('#opp_head_x').text(data['opp_head_x']);
+            $('#opp_head_y').text(data['opp_head_y']);
+            $('#opp_body_node').text(data['opp_body_node']);
+            $('#opp_score').text(data['opp_score']);
+            $('#opp_room_id').text(data['opp_room_id']);            
+            $('#opp_sid').text(data['opp_sid']);
+        }
+    })
+</script>
+</body>
+</html>

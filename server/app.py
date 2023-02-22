@@ -43,8 +43,6 @@ def data():
 @socketio.on('join')
 def handle_join():
     global last_created_room
-    global player_ip_addr
-    global player_port
 
     if len(waiting_players) == 0: # 기다리는 유저가 없는 경우
         waiting_players.append(request.sid)
@@ -60,10 +58,6 @@ def handle_join():
         join_room(room_id)
 
         room_of_players[request.sid] = room_id
-        
-        # 접속 시 유저의 ip, port 저장 
-        player_ip_addr[host_sid] = request.remote_addr
-        player_port[host_sid] = request.environ['REMOTE_PORT']
 
         last_created_room = ""
 
@@ -86,11 +80,11 @@ def send_data(data):
 
 @socketio.on('get_info')
 def save_info():
-    global player_ip_addr
-    global player_port
+    ip_addr = request.remote_addr
+    port = request.environ['REMOTE_PORT']
 
     # 상대 주소 전송 (서버 -> client의 webpage)
-    emit('opponent_address', {'ip_addr' : player_ip_addr[request.sid], 'port' : player_port[request.sid]})
+    emit('opponent_address', {'ip_addr' : ip_addr, 'port' : port}, broadcast=True, include_self=False)
 
 # 소켓 테스트용 1초마다 시간 쏴주는 함수
 @app.route("/servertime")

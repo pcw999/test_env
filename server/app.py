@@ -67,12 +67,13 @@ def handle_join():
         room_of_players[request.sid] = room_id
         
         last_created_room = ""
-        print(room_of_players)
+        print("NOW MATCHING..")
 
         # 상대 주소 전송 (서버 -> client의 webpage)
         emit('opponent_address', {'ip_addr' : player_ip_addr[host_sid], 'port' : player_port[host_sid]}, to=request.sid)
         emit('opponent_address', {'ip_addr' : player_ip_addr[request.sid], 'port' : player_port[request.sid]}, to=host_sid)
 
+        time.sleep(1)
         emit('matched', {'room_id' : room_id, 'sid' : request.sid}, to=room_id)
         emit('start-game', {'room_id' : room_id, 'sid' : request.sid}, to=request.sid)
         emit('start-game', {'room_id' : room_id, 'sid' : host_sid}, to=host_sid)

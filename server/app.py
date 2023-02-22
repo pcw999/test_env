@@ -79,11 +79,12 @@ def send_data(data):
     emit('opp_data', {'opp_head_x' : head_x, 'opp_head_y' : head_y, 'opp_body_node' : body_node, 'opp_score' : score, 'opp_room_id' : room_id, 'opp_sid' : sid}, broadcast=True, include_self=False)
 
 @socketio.on('get_info')
-def save_info():
+def get_info():
     ip_addr = request.remote_addr
     port = request.environ['REMOTE_PORT']
 
     # 상대 주소 전송 (서버 -> client의 webpage)
+    emit('my_port', {'myport': port}, to=request.sid)
     emit('opponent_address', {'ip_addr' : ip_addr, 'port' : port}, broadcast=True, include_self=False)
 
 # 소켓 테스트용 1초마다 시간 쏴주는 함수

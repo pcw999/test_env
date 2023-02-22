@@ -48,6 +48,11 @@
             socket.emit('opponent_address', { 'ip_addr': data['ip_addr'], 'port': data['port'] })
         })
 
+        server_socket.on('my_port', function (data) {
+            console.log(data['myport'])
+            socket.emit('my_port', {'myport': data['myport'] })
+        })
+
         server_socket.on('time', function (data) {
             $('#time').html(data['time']);
         });

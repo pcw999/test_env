@@ -29,6 +29,7 @@ socketio = SocketIO(app, cors_allowed_origins='*')
 
 UDP_IP = ''
 UDP_PORT = 0
+MY_PORT = 0
 
 ############################## SNAKE GAME LOGIC SECTION ##############################
 
@@ -209,6 +210,9 @@ def set_address(data):
     UDP_IP = data['ip_addr']
     UDP_PORT = data['port']
 
+    print(UDP_IP, UDP_PORT)
+    print(type(UDP_IP), type(UDP_PORT))
+
     # data test
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sock.bind(('0.0.0.0', UDP_PORT))
@@ -228,6 +232,11 @@ def set_address(data):
             pass
 
         i += 1
+
+@socketio.on('my_port')
+def set_port(data):
+    global MY_PORT
+    MY_PORT = data['myport']
 
 @app.route('/snake')
 def snake():

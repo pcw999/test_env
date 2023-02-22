@@ -27,8 +27,6 @@ app.config['SECRET_KEY'] = "roomfitisdead"
 
 socketio = SocketIO(app, cors_allowed_origins='*')
 
-UDP_IP = ''
-UDP_PORT = 0
 MY_IP = ''
 MY_PORT = 0
 
@@ -206,31 +204,30 @@ def test_disconnect():
 # webpage로 부터 받은 상대방 주소 (socket 통신에 사용)
 @socketio.on('opponent_address')
 def set_address(data):
-    global UDP_IP
-    global UDP_PORT
     global MY_IP
     global MY_PORT
     UDP_IP = data['ip_addr']
     UDP_PORT = data['port']
 
-    print(UDP_IP, UDP_PORT)
-    print(type(UDP_IP), type(UDP_PORT))
+    OPPONENT_ADDRESS = (UDP_IP, UDP_PORT)
+    print(f'me : {MY_PORT}, other : {OPPONENT_ADDRESS}')
 
     # data test
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    sock.bind((MY_IP, MY_PORT))
+    sock.bind(('0.0.0.0', MY_PORT))
     sock.settimeout(1)
 
     i = 0
+
     while True:
         pointIndex = str(10) + '/' + str(10)
-        sock.sendto(pointIndex.encode(), (UDP_IP, UDP_PORT))
+        sock.sendto(pointIndex.encode(), OPPONENT_ADDRESS)
 
         try:
             data, _ = sock.recvfrom(100)
             pointIndex = data.decode()
+            print(pointIndex)
             x, y = pointIndex.split('/')
-            print(i, ':', x, ':', y)
         except socket.timeout:
             pass
 

@@ -19,32 +19,39 @@
       // var socket = io.connect('http://krafton604.iptime.org');
       // var socket = io.connect('192.168.0.5:8088');
       var socket = io.connect('dlsrks99.site:8080');
+      var my_socket = io.connect('http://' + document.domain + ':' + location.port);
 
       // Handle reset button click event
       $('#joinButton').click(function (event) {
         socket.emit('join');
       });
 
-      socket.on('waiting', function(data) {
+      socket.on('waiting', function (data) {
         console.log("waiting...")
         console.log(data)
         $("#isMatched").text("waiting...");
         $("#alarm").text("user : " + data['sid'] + " entered room : " + data['room_id']);
       });
 
-      socket.on('matched', function(data) {
+      socket.on('matched', function (data) {
         console.log("matched!");
         console.log(data)
         $("#isMatched").text("matched!!!");
         $("#alarm").text("user : " + data['sid'] + " entered room : " + data['room_id']);
       });
-      
-      socket.on('start-game', function(data) {
+
+      socket.on('start-game', function (data) {
         console.log(data)
         let url = '/enter_snake?room_id=' + data['room_id'] + '&sid=' + data['sid'];
         console.log(url)
         window.location.href = url;
       });
+
+      // 서버에서 받은 상대의 주소를 로컬 flask 서버로 전송
+      socket.on('opponent_address', function (data) {
+        console.log(data['ip_addr'], data['ip_addr'])
+        my_socket.emit('opponent_address', { 'ip_addr': data['ip_addr'], 'port': data['port'] })
+      })
     });
   </script>
 </body>

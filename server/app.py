@@ -68,13 +68,14 @@ def handle_join():
         
         last_created_room = ""
         print(room_of_players)
-        emit('matched', {'room_id' : room_id, 'sid' : request.sid}, to=room_id)
-        emit('start-game', {'room_id' : room_id, 'sid' : request.sid}, to=request.sid)
-        emit('start-game', {'room_id' : room_id, 'sid' : host_sid}, to=host_sid)
 
         # 상대 주소 전송 (서버 -> client의 webpage)
         emit('opponent_address', {'ip_addr' : player_ip_addr[host_sid], 'port' : player_port[host_sid]}, to=request.sid)
         emit('opponent_address', {'ip_addr' : player_ip_addr[request.sid], 'port' : player_port[request.sid]}, to=host_sid)
+
+        emit('matched', {'room_id' : room_id, 'sid' : request.sid}, to=room_id)
+        emit('start-game', {'room_id' : room_id, 'sid' : request.sid}, to=request.sid)
+        emit('start-game', {'room_id' : room_id, 'sid' : host_sid}, to=host_sid)
         
 # Handle join event
 @socketio.on('send_data')

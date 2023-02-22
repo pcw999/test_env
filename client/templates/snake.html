@@ -49,7 +49,7 @@
         })
 
         server_socket.on('my_address', function (data) {
-            console.log(data['my_address'])
+            console.log(data['my_port'])
             socket.emit('my_address', {'my_ip': data['my_ip'], 'my_port': data['my_port']})
         })
 

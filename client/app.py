@@ -201,6 +201,13 @@ def test_connect():
 def test_disconnect():
     print('Client disconnected')
 
+@socketio.on('my_address')
+def set_port(data):
+    global MY_IP
+    global MY_PORT
+    MY_IP = data['my_ip']
+    MY_PORT = data['my_port']
+
 # webpage로 부터 받은 상대방 주소 (socket 통신에 사용)
 @socketio.on('opponent_address')
 def set_address(data):
@@ -233,13 +240,6 @@ def set_address(data):
 
         print(i)
         i += 1
-
-@socketio.on('my_address')
-def set_port(data):
-    global MY_IP
-    global MY_PORT
-    MY_IP = data['my_ip']
-    MY_PORT = data['my_port']
 
 @app.route('/snake')
 def snake():

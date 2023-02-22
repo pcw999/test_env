@@ -18,12 +18,17 @@ import jinja2
 import aiohttp_jinja2
 import uuid
 from engineio.payload import Payload
+import socket
+
 Payload.max_decode_packets = 200
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = "roomfitisdead"
 
 socketio = SocketIO(app, cors_allowed_origins='*')
+
+UDP_IP = ''
+UDP_PORT = 0
 
 ############################## SNAKE GAME LOGIC SECTION ##############################
 
@@ -174,7 +179,7 @@ class SnakeGameClass:
 
         return imgMain
 
-game = SnakeGameClass("./static/food.png")
+game = SnakeGameClass('C:/Users/cksdn/Desktop/test_env/client/static/food.png')
 ######################################################################################
 
 @app.route("/", methods=["GET", "POST"])
@@ -195,6 +200,34 @@ def test_connect():
 @socketio.on('disconnect')
 def test_disconnect():
     print('Client disconnected')
+
+# webpage로 부터 받은 상대방 주소 (socket 통신에 사용)
+@socketio.on('opponent_address')
+def set_address(data):
+    global UDP_IP
+    global UDP_PORT
+    UDP_IP = data['ip_addr']
+    UDP_PORT = data['port']
+
+    # data test
+    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    sock.bind(('0.0.0.0', UDP_PORT))
+    sock.settimeout(0.01)
+
+    i = 0
+    while True:
+        pointIndex = str(10) + '/' + str(10)
+        sock.sendto(pointIndex.encode(), (UDP_IP, UDP_PORT))
+
+        try:
+            data, _ = sock.recvfrom(100)
+            pointIndex = data.decode()
+            x, y = pointIndex.split('/')
+            print(i, ':', x, ':', y)
+        except socket.timeout:
+            pass
+
+        i += 1
 
 @app.route('/snake')
 def snake():

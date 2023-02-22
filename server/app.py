@@ -16,6 +16,10 @@ room_of_players = {}
 players_in_room = {} 
 last_created_room = ""
 
+# 유저 간 소켓 통신을 위한 정보 저장 { sid : usr_ip_addr }, { sid : usr_port }
+player_ip_addr = {}
+player_port = {}
+
 # @app.route("/", methods=["GET", "POST"])
 @app.route("/")
 def index():
@@ -23,6 +27,11 @@ def index():
 
 @socketio.on('connect')
 def test_connect():
+    # 접속 시 유저의 ip, port 저장 
+    sid = request.sid
+    player_ip_addr[sid] = request.remote_addr
+    player_port[sid] = request.environ['REMOTE_PORT']
+
     print('Client connected')
 
 @socketio.on('disconnect')
@@ -35,12 +44,14 @@ def data():
         time.sleep(1)
         socketio.emit('data', {'data': 'This is a data stream!'})
 
-
 # Handle join event
 @socketio.on('join')
 def handle_join():
     global last_created_room
-    if len(waiting_players) == 0:
+    global player_ip_addr
+    global player_port
+
+    if len(waiting_players) == 0: # 기다리는 유저가 없는 경우
         waiting_players.append(request.sid)
         last_created_room = str(uuid.uuid4())
 
@@ -48,7 +59,7 @@ def handle_join():
         join_room(last_created_room)
         room_of_players[request.sid] = last_created_room
         emit('waiting', {'room_id' : last_created_room, 'sid' : request.sid}, to=last_created_room)
-    else:
+    else: # 기다리는 유저가 있는 경우 (대기열 1명 존재)
         host_sid = waiting_players.pop()
         room_id = room_of_players[host_sid]
         join_room(room_id)
@@ -60,6 +71,10 @@ def handle_join():
         emit('matched', {'room_id' : room_id, 'sid' : request.sid}, to=room_id)
         emit('start-game', {'room_id' : room_id, 'sid' : request.sid}, to=request.sid)
         emit('start-game', {'room_id' : room_id, 'sid' : host_sid}, to=host_sid)
+
+        # 상대 주소 전송 (서버 -> client의 webpage)
+        emit('opponent_address', {'ip_addr' : player_ip_addr[host_sid], 'port' : player_port[host_sid]}, to=request.sid)
+        emit('opponent_address', {'ip_addr' : player_ip_addr[request.sid], 'port' : player_port[request.sid]}, to=host_sid)
         
 # Handle join event
 @socketio.on('send_data')

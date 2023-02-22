@@ -39,7 +39,6 @@
         console.log(sid);
 
         server_socket.on('connect', function () {
-            server_socket.emit('get_info');
             server_socket.emit('get_time');
         });
 
@@ -74,6 +73,10 @@
                 $('#opp_sid').text(data['opp_sid']);
             }
         })
+
+        setTimeout(function() {
+            server_socket.emit('get_info');
+        }, 3000)
     </script>
 </body>
 

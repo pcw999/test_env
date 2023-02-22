@@ -27,11 +27,6 @@ def index():
 
 @socketio.on('connect')
 def test_connect():
-    # 접속 시 유저의 ip, port 저장 
-    sid = request.sid
-    player_ip_addr[sid] = request.remote_addr
-    player_port[sid] = request.environ['REMOTE_PORT']
-
     print('Client connected')
 
 @socketio.on('disconnect')
@@ -48,8 +43,6 @@ def data():
 @socketio.on('join')
 def handle_join():
     global last_created_room
-    global player_ip_addr
-    global player_port
 
     if len(waiting_players) == 0: # 기다리는 유저가 없는 경우
         waiting_players.append(request.sid)
@@ -67,13 +60,7 @@ def handle_join():
         room_of_players[request.sid] = room_id
         
         last_created_room = ""
-        print("NOW MATCHING..")
 
-        # 상대 주소 전송 (서버 -> client의 webpage)
-        emit('opponent_address', {'ip_addr' : player_ip_addr[host_sid], 'port' : player_port[host_sid]}, to=request.sid)
-        emit('opponent_address', {'ip_addr' : player_ip_addr[request.sid], 'port' : player_port[request.sid]}, to=host_sid)
-
-        time.sleep(1)
         emit('matched', {'room_id' : room_id, 'sid' : request.sid}, to=room_id)
         emit('start-game', {'room_id' : room_id, 'sid' : request.sid}, to=request.sid)
         emit('start-game', {'room_id' : room_id, 'sid' : host_sid}, to=host_sid)
@@ -91,6 +78,18 @@ def send_data(data):
     print(head_x, head_y, score, room_id, sid)
     emit('opp_data', {'opp_head_x' : head_x, 'opp_head_y' : head_y, 'opp_body_node' : body_node, 'opp_score' : score, 'opp_room_id' : room_id, 'opp_sid' : sid}, broadcast=True, include_self=False)
 
+@socketio.on('get_info')
+def save_info():
+    global player_ip_addr
+    global player_port
+
+    # 접속 시 유저의 ip, port 저장 
+    sid = request.sid
+    player_ip_addr[sid] = request.remote_addr
+    player_port[sid] = request.environ['REMOTE_PORT']
+
+    # 상대 주소 전송 (서버 -> client의 webpage)
+    emit('opponent_address', {'ip_addr' : player_ip_addr[request.sid], 'port' : player_port[request.sid]}, broadcast=True, include_self=False)
 
 # 소켓 테스트용 1초마다 시간 쏴주는 함수
 @app.route("/servertime")

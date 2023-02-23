@@ -7,7 +7,7 @@ socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 socket.bind(('0.0.0.0', 5000))
 
 opp_addr = ('192.168.0.30', 5000)
-socket.timeout(0.01)
+socket.settimeout(0.01)
 
 cap = cv2.VideoCapture(0)
 

@@ -10,13 +10,17 @@ udp_socket.bind(('0.0.0.0', 5000))
 remote_address = ('192.168.0.30', 5000)
 
 # Set the maximum size of a UDP packet
-max_packet_size = 65535
+max_packet_size = 61440
 
 # Set a timeout on the socket receive operation to avoid blocking for too long
 udp_socket.settimeout(0.01)
 
 # Start capturing frames from the webcam
 cap = cv2.VideoCapture(0)
+
+# Calculate the number of packets required to send a video frame
+frame_size = 2764800  # 1280x720 with 3 color channels
+packet_count = (frame_size + max_packet_size - 1) // max_packet_size
 
 # Main loop for sending and receiving video frames
 while True:
@@ -29,13 +33,13 @@ while True:
     packets = [send_data[i:i+max_packet_size] for i in range(0, len(send_data), max_packet_size)]
 
     # Send each packet sequentially to the remote peer
-    for packet in packets:
-        udp_socket.sendto(packet, remote_address)
+    for i in range(packet_count):
+        udp_socket.sendto(packets[i], remote_address)
 
     try:
         # Receive packets from the remote peer and reassemble them into a video frame
         received_packets = []
-        while len(received_packets) * max_packet_size < 2764800:
+        while len(received_packets) < packet_count:
             packet, _ = udp_socket.recvfrom(max_packet_size)
             received_packets.append(packet)
         received_data = b''.join(received_packets)

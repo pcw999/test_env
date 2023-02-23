@@ -48,7 +48,7 @@ while True:
 
         # Display the received video frame on the screen
         cv2.imshow("Received Frame", received_frame)
-    except:
+    except socket.timeout:
         # If no video frame is received, do nothing and continue the loop
         pass
 

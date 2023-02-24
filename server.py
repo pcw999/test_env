@@ -59,13 +59,11 @@ def handle_join():
         waiting_players.append(request.sid)
         last_created_room = str(uuid.uuid4())
 
-        join_room(last_created_room)
         room_of_players[request.sid] = last_created_room
         emit('waiting', {'room_id' : last_created_room, 'sid' : request.sid}, to=last_created_room)
     else:
         host_sid = waiting_players.pop()
         room_id = room_of_players[host_sid]
-        join_room(room_id)
 
         room_of_players[request.sid] = room_id
         players_in_room[room_id] = 0
@@ -105,6 +103,7 @@ def my_port(data):
     ip_addr = request.remote_addr
     port = request.environ['REMOTE_PORT']
     room_id = data['room_id']
+    join_room(room_id)
     players_in_room[room_id] += 1
     emit('my_port', {'my_port':port})
 

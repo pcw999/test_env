@@ -349,16 +349,19 @@ class SnakeGameClass:
             self.allowedLength += 50
             self.score += 1
         if udp:
-            send_data = str(cx) + str(cy) + str(self.points) + str(self.score) + str(fps)
+            send_data = str(cx) + '/' + str(cy) + '/' + str(self.points) + '/' + str(self.score) + '/' + str(fps)
             self.sock.sendto(send_data.encode(), self.opp_addr)
 
             try:
                 data, _ = self.sock.recvfrom(500)
                 decode_data = data.decode()
                 decode_data_list = decode_data.split('/')
+                for i in decode_data_list:
+                    print(i)
                 opponent_data = [int(decode_data_list[0]), int(decode_data_list[1]), int(decode_data_list[2]), int(decode_data_list[3]), int(decode_data_list[4])]
 
             except socket.timeout:
+                print('error')
                 pass
         else:
             socketio.emit('game_data', {'head_x': cx, 'head_y': cy, 'body_node': self.points, 'score': self.score, 'fps' : fps})
@@ -488,6 +491,8 @@ def snake():
         global game
         global gameover_flag
         global sid
+
+        time.sleep(2)
 
         while True:
             success, img = cap.read()

@@ -362,7 +362,6 @@ class SnakeGameClass:
                 opponent_data['opp_score'] = int(decode_data_list[3])
 
             except socket.timeout:
-                print('error')
                 pass
         else:
             socketio.emit('game_data', {'head_x': cx, 'head_y': cy, 'body_node': self.points, 'score': self.score, 'fps' : fps})
@@ -372,7 +371,7 @@ class SnakeGameClass:
         # print(self.points[:-5])
         if self.isCollision(self.points[-1], o_bodys):
             print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Hit")
-            self.gameOver = True
+            self.gameOver = False
             self.points = []  # all points of the snake
             self.lengths = []  # distance between each point
             self.currentLength = 0  # total length of the snake

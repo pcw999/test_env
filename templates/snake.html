@@ -39,11 +39,15 @@
       console.log(room_id);
       console.log(sid);
       server_socket.on("connect", function () {
-        server_socket.emit("get_time");
+        server_socket.emit('get_time');
+        server_socket.emit('my_port');
       });
       server_socket.on("time", function (data) {
         $("#time").html(data["time"]);
       });
+      server_socket.on("my_port", function (data) {
+        client_socket.emit('my_port', {'my_port':data['my_port']})
+      })
       client_socket.on("game_data", function (data) {
         $("#head_x").text(data["head_x"]);
         $("#head_y").text(data["head_y"]);

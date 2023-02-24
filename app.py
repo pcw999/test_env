@@ -18,6 +18,7 @@ import jinja2
 import aiohttp_jinja2
 import uuid
 from engineio.payload import Payload
+import socket
 
 Payload.max_decode_packets = 200
 
@@ -394,6 +395,8 @@ gameover_flag = False
 room_id = ""
 sid = ""
 
+MY_PORT = 0
+
 @app.route("/", methods=["GET", "POST"])
 def index():
     return render_template("index.html")
@@ -426,6 +429,12 @@ def test_disconnect():
     socketio.emit('server_disconnect', {'room_id' : room_id, 'sid' : sid})
     print('Client disconnected!!!')
 
+@socketio.on('my_port')
+def my_port(data):
+    global MY_PORT
+
+    MY_PORT = data['my_port']
+    print(f'data check : {type(MY_PORT)}, {MY_PORT}')
 
 @socketio.on('opp_data_transfer')
 def opp_data_transfer(data):

@@ -31,7 +31,9 @@ def test_connect():
 
 @socketio.on('disconnect')
 def test_disconnect():
-    print('Client disconnected')
+    ip_addr = request.remote_addr
+    port = request.environ['REMOTE_PORT']
+    print(f'Client disconnected: {ip_addr}:{port}')
 
 @socketio.on('server_disconnect')
 def room_disconnect(data):
@@ -92,10 +94,13 @@ def get_time():
         socketio.emit('time', {'time': current_time})
         socketio.sleep(1)
 
-# @socketio.on('my_port')
-# def my_port():
-#     port = request.environ['REMOTE_PORT']
-#     emit('my_port', {'my_port':port})
+# 서버에서 현재 자신의 포트 받아오기
+# < sock.bind() 작업에서 포트 번호 지정을 위해 필요 >
+# < index -> snake 페이지 변환하면서 포트 변경됨 > => 매칭 시 그때 포트를 받은 후 연결 
+@socketio.on('my_port')
+def my_port():
+    port = request.environ['REMOTE_PORT']
+    emit('my_port', {'my_port':port})
 
 
 if __name__ == "__main__":

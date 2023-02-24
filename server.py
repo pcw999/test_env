@@ -25,7 +25,9 @@ def index():
 
 @socketio.on('connect')
 def test_connect():
-    print('Client connected')
+    ip_addr = request.remote_addr
+    port = request.environ['REMOTE_PORT']
+    print(f'Client connected: {ip_addr}:{port}')
 
 @socketio.on('disconnect')
 def test_disconnect():
@@ -89,6 +91,11 @@ def get_time():
         current_time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         socketio.emit('time', {'time': current_time})
         socketio.sleep(1)
+
+# @socketio.on('my_port')
+# def my_port():
+#     port = request.environ['REMOTE_PORT']
+#     emit('my_port', {'my_port':port})
 
 
 if __name__ == "__main__":

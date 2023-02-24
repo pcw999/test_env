@@ -5,11 +5,13 @@ import cv2
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
 cap = cv2.VideoCapture(0)
+cap.set(3, 1280)
+cap.set(4, 720)
 
 while True:
     success, img = cap.read()
     img = cv2.flip(img, 1)
-    d = img.flateen()
+    d = img.flatten()
     s = d.tostring()
   
     for i in range(45):

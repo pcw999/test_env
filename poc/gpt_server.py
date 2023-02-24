@@ -2,22 +2,23 @@ import socket
 import cv2
 import threading
 import queue
+import numpy
 
 FRAME_WIDTH = 640
 FRAME_HEIGHT = 480
 PACKET_SIZE = 8192
 
-def receive_packets(sock, queue):
+def receive_packets(sock, frame_queue):
     while True:
         data, addr = sock.recvfrom(PACKET_SIZE)
-        queue.put(data)
+        frame_queue.put(data)
 
-def process_frames(queue):
+def process_frames(frame_queue):
     s = [b'' for x in range(45)]
     while True:
         picture = b''
         for i in range(45):
-            data = queue.get()
+            data = frame_queue.get()
             s[data[0]] = data[1:]
             if i == 44:
                 for j in range(45):
@@ -34,12 +35,12 @@ def main():
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sock.bind(('0.0.0.0', 5000))
 
-    queue = queue.Queue()
-    receiver_thread = threading.Thread(target=receive_packets, args=(sock, queue))
+    frame_queue = queue.Queue()
+    receiver_thread = threading.Thread(target=receive_packets, args=(sock, frame_queue))
     receiver_thread.daemon = True
     receiver_thread.start()
 
-    process_frames(queue)
+    process_frames(frame_queue)
 
     sock.close()
     cv2.destroyAllWindows()

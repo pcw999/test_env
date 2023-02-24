@@ -356,9 +356,11 @@ class SnakeGameClass:
                 data, _ = self.sock.recvfrom(500)
                 decode_data = data.decode()
                 decode_data_list = decode_data.split('/')
-                for i in decode_data_list:
-                    print(i)
-                opponent_data = [int(decode_data_list[0]), int(decode_data_list[1]), int(decode_data_list[2]), int(decode_data_list[3]), int(decode_data_list[4])]
+                opponent_data['head_x'] = int(decode_data_list[0])
+                opponent_data['head_y'] = int(decode_data_list[1])
+                opponent_data['body_node'] = eval(decode_data_list[2])
+                opponent_data['score'] = int(decode_data_list[3])
+                opponent_data['fps'] = int(decode_data_list[4])
 
             except socket.timeout:
                 print('error')
@@ -412,7 +414,7 @@ class SnakeGameClass:
     def __del__(self):
         self.sock.close()
 
-opponent_data = []
+opponent_data = {}
 gameover_flag = False
 ######################################################################################
 
@@ -471,13 +473,6 @@ def set_address(data):
 
 @socketio.on('opp_data_transfer')
 def opp_data_transfer(data):
-    opp_head_x = data['data']['opp_head_x']
-    opp_head_y = data['data']['opp_head_y']
-    opp_body_node = data['data']['opp_body_node']
-    opp_score = data['data']['opp_score']
-    opp_room_id = data['data']['opp_room_id']
-    opp_sid = data['data']['opp_sid']
-
     global opponent_data
     opponent_data = data['data']
     # socketio.emit('opp_data_to_test_server', {'data' : data}, broadcast=True)
@@ -492,7 +487,7 @@ def snake():
         global gameover_flag
         global sid
 
-        time.sleep(2)
+        time.sleep(1)
 
         while True:
             success, img = cap.read()

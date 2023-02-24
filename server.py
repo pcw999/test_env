@@ -59,7 +59,7 @@ def handle_join():
     if len(waiting_players) == 0:
         waiting_players.append(request.sid)
         last_created_room = str(uuid.uuid4())
-        join_room(room_id)
+        join_room(last_created_room)
         room_of_players[request.sid] = last_created_room
         emit('waiting', {'room_id' : last_created_room, 'sid' : request.sid}, to=last_created_room)
     else:

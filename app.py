@@ -349,18 +349,17 @@ class SnakeGameClass:
             self.allowedLength += 50
             self.score += 1
         if udp:
-            send_data = str(cx) + '/' + str(cy) + '/' + str(self.points) + '/' + str(self.score) + '/' + str(fps)
+            send_data = str(cx) + '/' + str(cy) + '/' + str(self.points) + '/' + str(self.score)
             self.sock.sendto(send_data.encode(), self.opp_addr)
 
             try:
-                data, _ = self.sock.recvfrom(500)
+                data, _ = self.sock.recvfrom(10000)
                 decode_data = data.decode()
                 decode_data_list = decode_data.split('/')
                 opponent_data['opp_head_x'] = int(decode_data_list[0])
                 opponent_data['opp_head_y'] = int(decode_data_list[1])
                 opponent_data['opp_body_node'] = eval(decode_data_list[2])
                 opponent_data['opp_score'] = int(decode_data_list[3])
-                opponent_data['opp_fps'] = int(float(decode_data_list[4]))
 
             except socket.timeout:
                 print('error')
@@ -390,7 +389,7 @@ class SnakeGameClass:
             #                    scale=7, thickness=5, offset=20)
             # cvzone.putTextRect(imgMain, f'Your Score: {self.score}', [300, 550],
             #                    scale=7, thickness=5, offset=20)
-            gameover_flag = True
+            gameover_flag = False
         else:
             # draw others snake
             o_body_node = []

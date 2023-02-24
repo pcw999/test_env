@@ -360,7 +360,7 @@ class SnakeGameClass:
                 opponent_data['head_y'] = int(decode_data_list[1])
                 opponent_data['body_node'] = eval(decode_data_list[2])
                 opponent_data['score'] = int(decode_data_list[3])
-                opponent_data['fps'] = int(decode_data_list[4])
+                opponent_data['fps'] = int(float(decode_data_list[4]))
 
             except socket.timeout:
                 print('error')

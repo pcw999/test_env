@@ -434,7 +434,34 @@ def my_port(data):
     global MY_PORT
 
     MY_PORT = data['my_port']
-    print(f'data check : {type(MY_PORT)}, {MY_PORT}')
+
+# webpage로 부터 받은 상대방 주소 (socket 통신에 사용)
+@socketio.on('opponent_address')
+def set_address(data):
+    global MY_PORT
+    OPPONENT_ADDRESS = (data['ip_addr'], data['port'])
+
+    # data test
+    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    sock.bind(('0.0.0.0', MY_PORT))
+    sock.settimeout(1)
+
+    i = 0
+
+    while True:
+        pointIndex = str(10) + '/' + str(10)
+        sock.sendto(pointIndex.encode(), OPPONENT_ADDRESS)
+
+        try:
+            data, _ = sock.recvfrom(100)
+            pointIndex = data.decode()
+            print(pointIndex)
+            x, y = pointIndex.split('/')
+        except socket.timeout:
+            pass
+
+        print(i)
+        i += 1
 
 @socketio.on('opp_data_transfer')
 def opp_data_transfer(data):

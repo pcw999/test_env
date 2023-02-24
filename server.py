@@ -54,6 +54,7 @@ def gameover_to_server(data):
 @socketio.on('join')
 def handle_join():
     global last_created_room
+    global players_in_room
     if len(waiting_players) == 0:
         waiting_players.append(request.sid)
         last_created_room = str(uuid.uuid4())
@@ -67,6 +68,7 @@ def handle_join():
         join_room(room_id)
 
         room_of_players[request.sid] = room_id
+        players_in_room[room_id] = 0
 
         last_created_room = ""
         print(room_of_players)
@@ -98,10 +100,16 @@ def get_time():
 # < sock.bind() 작업에서 포트 번호 지정을 위해 필요 >
 # < index -> snake 페이지 변환하면서 포트 변경됨 > => 매칭 시 그때 포트를 받은 후 연결 
 @socketio.on('my_port')
-def my_port():
+def my_port(data):
+    global players_in_room
+    ip_addr = request.remote_addr
     port = request.environ['REMOTE_PORT']
+    room_id = data['room_id']
+    players_in_room[room_id] += 1
     emit('my_port', {'my_port':port})
 
+    if players_in_room[room_id] == 2:
+        emit('opponent_address', {'ip_addr' : ip_addr, 'port' : port}, broadcast=True, include_self=False, room=room_id)
 
 if __name__ == "__main__":
     socketio.run(app, host='0.0.0.0', port=8080)

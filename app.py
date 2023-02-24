@@ -27,6 +27,9 @@ app.config['SECRET_KEY'] = "roomfitisdead"
 
 socketio = SocketIO(app, cors_allowed_origins='*')
 
+### 임시 변수 => snake 게임 데이터를 emit 할지, 상대에게 socket으로 전송할지 ###
+udp = True 
+
 class HandDetector:
     """
     Finds Hands using the mediapipe library. Exports the landmarks
@@ -189,7 +192,7 @@ detector = HandDetector(detectionCon=0.5, maxHands=1)
 
 
 class SnakeGameClass:
-    def __init__(self, pathFood):
+    def __init__(self, pathFood, port_num, opp_ip, opp_port):
         self.points = []  # all points of the snake
         self.lengths = []  # distance between each point
         self.currentLength = 0  # total length of the snake
@@ -207,6 +210,11 @@ class SnakeGameClass:
 
         self.score = 0
         self.gameOver = False
+
+        self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.sock.bind(('0.0.0.0', port_num))
+        self.sock.settimeout(0.01)
+        self.opp_addr = (opp_ip, opp_port)    
 
     # ---collision function---
     def ccw(self, p, a, b):
@@ -277,6 +285,7 @@ class SnakeGameClass:
         return imgMain
 
     def my_snake_update(self, HandPoints, o_bodys):
+        global opponent_data
         px, py = self.previousHead
         # ----HandsPoint moving ----
         s_speed = 30
@@ -339,8 +348,20 @@ class SnakeGameClass:
             self.randomFoodLocation()
             self.allowedLength += 50
             self.score += 1
+        if udp:
+            send_data = str(cx) + str(cy) + str(self.points) + str(self.score) + str(fps)
+            self.sock.sendto(send_data.encode(), self.opp_addr)
 
-        socketio.emit('game_data', {'head_x': cx, 'head_y': cy, 'body_node': self.points, 'score': self.score, 'fps' : fps})
+            try:
+                data, _ = self.sock.recvfrom(500)
+                decode_data = data.decode()
+                decode_data_list = decode_data.split('/')
+                opponent_data = [int(decode_data_list[0]), int(decode_data_list[1]), int(decode_data_list[2]), int(decode_data_list[3]), int(decode_data_list[4])]
+
+            except socket.timeout:
+                pass
+        else:
+            socketio.emit('game_data', {'head_x': cx, 'head_y': cy, 'body_node': self.points, 'score': self.score, 'fps' : fps})
 
         # ---- Collision ----
         # print(self.points[-1])
@@ -384,9 +405,9 @@ class SnakeGameClass:
             imgMain = self.draw_snakes(imgMain, self.points, self.score, 1)
 
         return imgMain
-
-
-game = SnakeGameClass("./static/food.png")
+    
+    def __del__(self):
+        self.sock.close()
 
 opponent_data = []
 gameover_flag = False
@@ -396,6 +417,7 @@ room_id = ""
 sid = ""
 
 MY_PORT = 0
+game = SnakeGameClass("./static/food.png", MY_PORT, '0.0.0.0', 0)
 
 @app.route("/", methods=["GET", "POST"])
 def index():
@@ -412,7 +434,6 @@ def enter_snake():
     sid = request.args.get('sid')
     print(room_id, sid)
 
-    game = SnakeGameClass("./static/food.png")
     return render_template("snake.html", room_id=room_id, sid=sid)
 
 
@@ -439,29 +460,11 @@ def my_port(data):
 @socketio.on('opponent_address')
 def set_address(data):
     global MY_PORT
-    OPPONENT_ADDRESS = (data['ip_addr'], data['port'])
+    global game
+    opp_ip = data['ip_addr']
+    opp_port = data['port']
 
-    # data test
-    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    sock.bind(('0.0.0.0', MY_PORT))
-    sock.settimeout(1)
-
-    i = 0
-
-    while True:
-        pointIndex = str(10) + '/' + str(10)
-        sock.sendto(pointIndex.encode(), OPPONENT_ADDRESS)
-
-        try:
-            data, _ = sock.recvfrom(100)
-            pointIndex = data.decode()
-            print(pointIndex)
-            x, y = pointIndex.split('/')
-        except socket.timeout:
-            pass
-
-        print(i)
-        i += 1
+    game = SnakeGameClass("./static/food.png", MY_PORT, opp_ip, opp_port)
 
 @socketio.on('opp_data_transfer')
 def opp_data_transfer(data):

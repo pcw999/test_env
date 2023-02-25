@@ -461,6 +461,11 @@ class SnakeGameClass:
             use_udp = False
         
         time.sleep(1)
+    
+    def __del__(self):
+        global use_udp
+        use_udp = True
+        self.sock.close()
 
 opponent_data = {}
 gameover_flag = False

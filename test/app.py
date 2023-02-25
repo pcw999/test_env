@@ -448,14 +448,14 @@ class SnakeGameClass:
         global use_udp
         a = 0
 
-        for i in range(30) :
+        for i in range(10) :
             self.sock.sendto('test_code'.encode(), self.opp_addr)
             try:
                 data, result = self.sock.recvfrom(100)
             except socket.timeout:
                 a += 1
 
-        if a > 25 :
+        if a == 0 :
             use_udp = False
         
         time.sleep(1)

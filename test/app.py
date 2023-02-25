@@ -459,8 +459,6 @@ class SnakeGameClass:
 
         if a == 0 :
             use_udp = False
-        
-        time.sleep(1)
     
     def __del__(self):
         global use_udp
@@ -548,6 +546,8 @@ def snake():
         global game
         global gameover_flag
         global sid
+
+        time.sleep(1)
 
         while True:
             success, img = cap.read()

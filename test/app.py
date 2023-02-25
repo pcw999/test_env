@@ -430,6 +430,7 @@ class SnakeGameClass:
         return imgMain
     
     def send_data(self, cx, cy):
+        global opponent_data
         data_set = str(cx) + '/' + str(cy) + '/' + str(self.points) + '/' + str(self.score)
         self.sock.sendto(data_set.encode(), self.opp_addr)
 

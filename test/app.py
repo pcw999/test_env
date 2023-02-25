@@ -203,6 +203,7 @@ yellow = (0, 255, 255)  # yellow
 cyan = (255, 255, 0)  # cyan
 detector = HandDetector(detectionCon=0.5, maxHands=1)
 
+
 class SnakeGameClass:
     def __init__(self, pathFood, port_num, opp_ip, opp_port):
         self.points = []  # all points of the snake

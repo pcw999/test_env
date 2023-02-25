@@ -457,6 +457,8 @@ class SnakeGameClass:
 
         if a > 25 :
             use_udp = False
+        
+        time.sleep(1)
 
 opponent_data = {}
 gameover_flag = False

@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>SNAKE</title>
+    <script src="//code.jquery.com/jquery-1.12.4.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.6.0/socket.io.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link
+      rel="shortcut icon"
+      href="{{ url_for('static', filename='favicon.ico') }}"
+    />
+  </head>
+  <body>
+    <h1>snake.html</h1>
+    <div>
+      <h1 style="display: inline">SCORE :</h1>
+      <h1 style="display: inline" id="score">0</h1>
+    </div>
+
+    <img src="{{ url_for('snake') }}" />
+    <div><a>fps : </a><a id="fps"></a></div>
+    <div><a>head_x 좌표 : </a><a id="head_x"></a></div>
+    <div><a>head_y 좌표 : </a><a id="head_y"></a></div>
+    <div><a>몸통 리스트 : </a><a id="body_node"></a></div>
+    <div id="time"></div>
+    <div><a>상대 head_x 좌표 : </a><a id="bot_head_x"></a></div>
+    <div><a>상대 head_y 좌표 : </a><a id="bot_head_y"></a></div>
+    <div><a>상대 몸통 리스트 : </a><a id="bot_body_node"></a></div>
+    <div><a>상대 스코어 : </a><a id="bot_score"></a></div>
+    <div><a>상대 room_id : </a><a id="bot_room_id"></a></div>
+    <div><a>상대 sid : </a><a id="bot_sid"></a></div>
+    <script>
+      var client_socket = io.connect(
+        "http://" + document.domain + ":" + location.port
+      );
+      // var server_socket = io.connect("http://krafton604.iptime.org");
+      var server_socket = io.connect("http://dlsrks99.site:8080");
+
+      let room_id = "{{room_id}}";
+      let sid = "{{sid}}";
+
+      console.log(room_id);
+      console.log(sid);
+      server_socket.on("connect", function () {
+        server_socket.emit("get_time");
+      });
+      server_socket.on("time", function (data) {
+        $("#time").html(data["time"]);
+      });
+      client_socket.on("game_data", function (data) {
+        $("#head_x").text(data["head_x"]);
+        $("#head_y").text(data["head_y"]);
+        $("#body_node").text(data["body_node"]);
+        $("#score").text(data["score"]);
+        $("#fps").text(data["fps"]);
+        // console.log(data)
+        server_socket.emit("send_data_bot", {
+          head_x: data["head_x"],
+          head_y: data["head_y"],
+          body_node: data["body_node"],
+          score: data["score"],
+          room_id: room_id,
+          sid: sid,
+        });
+      });
+      server_socket.on("bot_data", function (data) {
+        console.log(data);
+        $("#bot_head_x").text(data["bot_head_x"]);
+        $("#bot_head_y").text(data["bot_head_y"]);
+        $("#bot_body_node").text(data["bot_body_node"]);
+        $("#bot_score").text(data["bot_score"]);
+        $("#bot_room_id").text(data["bot_room_id"]);
+
+        if (client_socket.connected) {
+          client_socket.emit("bot_data_transfer", { data: data });
+        } else {
+          console.log("socket not connected");
+        }
+      });
+      client_socket.on("server_disconnect", function (data) {
+        server_socket.emit("server_disconnect", {
+          room_id: data["room_id"],
+          sid: data["sid"],
+        });
+      });
+
+      client_socket.on("gameover", function (data) {
+        server_socket.emit("gameover_to_server", { sid: data["sid"] });
+      });
+      server_socket.on("gameover_to_clients", function (data) {
+        // TODO : 승패 판정 로직 다시 짤것
+        if (sid != data["sid"]) {
+          Swal.fire({
+            title: "게임 끝!",
+            text: "로비로 돌아갑니다",
+            icon: "success",
+            confirmButtonText: "OK",
+          }).then((result) => {
+            window.location.href = "/";
+          });
+        } else {
+          Swal.fire({
+            title: "게임 끝!",
+            text: "로비로 돌아갑니다",
+            icon: "error",
+            confirmButtonText: "OK",
+          }).then((result) => {
+            window.location.href = "/";
+          });
+        }
+      });
+    </script>
+  </body>
+</html>

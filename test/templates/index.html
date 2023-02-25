@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Biam.IO</title>
+  <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
+  <!-- custom css -->
+  <link rel="stylesheet" href="{{url_for('static', filename='index.css')}}">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+
+<body>
+  <h1>Biam.IO</h1>
+  <img class="roomfit" src="static/dabcat.png" style="border-radius: 30px;width: 300px;height: 300px;" />
+  <p><br>RoomFit에 X를 눌러 조의를 표하세요</p>
+  <button id="joinButton">게임 입장</button>
+  <h2 id="isMatched"></h2>
+  <h2 id="alarm"></h2>
+  <script src="//code.jquery.com/jquery-1.11.1.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.6.0/socket.io.min.js"></script>
+  <script>
+    $(document).ready(function () {
+      // Connect to the server
+      // var socket = io.connect('http://krafton604.iptime.org');
+      var socket = io.connect('http://dlsrks99.site:8080');
+
+      // Handle reset button click event
+      $('#joinButton').click(function (event) {
+        socket.emit('join');
+      });
+
+      socket.on('waiting', function(data) {
+        console.log("waiting...")
+        console.log(data)
+        $("#isMatched").text("waiting...");
+        $("#alarm").text("user : " + data['sid'] + " entered room : " + data['room_id']);
+      });
+
+      socket.on('matched', function(data) {
+        console.log("matched!");
+        console.log(data)
+        $("#isMatched").text("matched!!!");
+        $("#alarm").text("user : " + data['sid'] + " entered room : " + data['room_id']);
+      });
+      
+      socket.on('start-game', function(data) {
+        console.log(data)
+        let url = '/enter_snake?room_id=' + data['room_id'] + '&sid=' + data['sid'];
+        console.log(url)
+        window.location.href = url;
+      });
+    });
+  </script>
+</body>
+
+</html>

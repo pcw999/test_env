@@ -17,6 +17,7 @@ socketio = SocketIO(app, cors_allowed_origins='*')
 waiting_players = []
 room_of_players = {}
 players_in_room = {}
+address = {}
 last_created_room = ""
 
 @app.route("/")

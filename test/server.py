@@ -25,11 +25,15 @@ def index():
 
 @socketio.on('connect')
 def test_connect():
-    print('Client connected')
+    ip_addr = request.remote_addr
+    port = request.environ['REMOTE_PORT']
+    print(f'Client connected: {ip_addr}:{port}')
 
 @socketio.on('disconnect')
 def test_disconnect():
-    print('Client disconnected')
+    ip_addr = request.remote_addr
+    port = request.environ['REMOTE_PORT']
+    print(f'Client disconnected: {ip_addr}:{port}')
 
 @socketio.on('server_disconnect')
 def room_disconnect(data):
@@ -104,6 +108,27 @@ def get_time():
         current_time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         socketio.emit('time', {'time': current_time})
         socketio.sleep(1)
+
+# 서버에서 현재 자신의 포트 받아오기
+# < sock.bind() 작업에서 포트 번호 지정을 위해 필요 >
+# < index -> snake 페이지 변환하면서 포트 변경됨 > => 매칭 시 그때 포트를 받은 후 연결 
+@socketio.on('my_port')
+def my_port(data):
+    global players_in_room
+    global address
+    ip_addr = request.remote_addr
+    port = request.environ['REMOTE_PORT']
+    room_id = data['room_id']
+    
+    join_room(room_id)
+    players_in_room[room_id] += 1
+    emit('my_port', {'my_port':port})
+
+    if players_in_room[room_id] == 2:
+        emit('opponent_address', {'ip_addr' : ip_addr, 'port' : port}, broadcast=True, include_self=False, room=room_id)
+        emit('opponent_address', {'ip_addr' : address[room_id][0], 'port' : address[room_id][1]})
+    else:
+        address[room_id] = [ip_addr, port]
 
 
 if __name__ == "__main__":

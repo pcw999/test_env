@@ -437,11 +437,14 @@ class SnakeGameClass:
         try:
             data, _ = self.sock.recvfrom(10000)
             decode_data = data.decode()
-            decode_data_list = decode_data.split('/')
-            opponent_data['opp_head_x'] = int(decode_data_list[0])
-            opponent_data['opp_head_y'] = int(decode_data_list[1])
-            opponent_data['opp_body_node'] = eval(decode_data_list[2])
-            opponent_data['opp_score'] = int(decode_data_list[3])
+            if decode_data == 'A' :
+                pass
+            else:
+                decode_data_list = decode_data.split('/')
+                opponent_data['opp_head_x'] = int(decode_data_list[0])
+                opponent_data['opp_head_y'] = int(decode_data_list[1])
+                opponent_data['opp_body_node'] = eval(decode_data_list[2])
+                opponent_data['opp_score'] = int(decode_data_list[3])
         except socket.timeout:
             pass
 
@@ -450,7 +453,7 @@ class SnakeGameClass:
         a = 0
 
         for i in range(10) :
-            test_code = '640/360/[[[640, 360]]]/0'
+            test_code = 'A'
             self.sock.sendto(test_code.encode(), self.opp_addr)
             try:
                 data, result = self.sock.recvfrom(100)

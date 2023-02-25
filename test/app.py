@@ -450,7 +450,7 @@ class SnakeGameClass:
         a = 0
 
         for i in range(10) :
-            test_code = '0/0/[[[0, 0]]]/0'
+            test_code = '640/360/[[[640, 360]]]/0'
             self.sock.sendto(test_code.encode(), self.opp_addr)
             try:
                 data, result = self.sock.recvfrom(100)

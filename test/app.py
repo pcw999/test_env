@@ -203,7 +203,6 @@ yellow = (0, 255, 255)  # yellow
 cyan = (255, 255, 0)  # cyan
 detector = HandDetector(detectionCon=0.5, maxHands=1)
 
-
 class SnakeGameClass:
     def __init__(self, pathFood, port_num, opp_ip, opp_port):
         self.points = []  # all points of the snake
@@ -458,8 +457,6 @@ class SnakeGameClass:
         if a > 25 :
             use_udp = False
 
-game = SnakeGameClass("./static/food.png")
-
 opponent_data = {}
 gameover_flag = False
 ######################################################################################
@@ -484,7 +481,6 @@ def enter_snake():
     sid = request.args.get('sid')
     print(room_id, sid)
 
-    game = SnakeGameClass("./static/food.png")
     return render_template("snake.html", room_id=room_id, sid=sid)
 
 

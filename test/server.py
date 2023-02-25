@@ -54,6 +54,7 @@ def gameover_to_server(data):
 @socketio.on('join')
 def handle_join():
     global last_created_room
+    global players_in_room
     if len(waiting_players) == 0:
         waiting_players.append(request.sid)
         last_created_room = str(uuid.uuid4())
@@ -67,6 +68,7 @@ def handle_join():
         join_room(room_id)
 
         room_of_players[request.sid] = room_id
+        players_in_room[room_id] = 0
 
         last_created_room = ""
         print(room_of_players)

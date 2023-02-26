@@ -216,6 +216,7 @@ class SnakeGameClass:
         self.foodPoint = 640, 360
 
         self.score = 0
+        self.opp_score = 0
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.opp_addr = ()
         self.is_udp = False
@@ -277,7 +278,7 @@ class SnakeGameClass:
         cv2.polylines(imgMain, np.int32([pts]), False, maincolor, 15)
 
         return imgMain
-
+    
     # 각 프레임마다 먹이를 그려줌
     def draw_Food(self, imgMain): 
         rx, ry = self.foodPoint
@@ -359,6 +360,7 @@ class SnakeGameClass:
         if (rx - (self.wFood // 2) < cx < rx + (self.wFood // 2)) and (ry - (self.hFood // 2) < cy < ry + (self.hFood // 2)):
             self.allowedLength += 50
             self.score += 1
+            socketio.emit('user_ate_food', {'score':self.score})
     
     # 뱀이 충돌했을때
     def execute(self):
@@ -504,6 +506,19 @@ def set_address(data):
 def opp_data_transfer(data):
     global opponent_data
     opponent_data = data['data']
+
+# socketio로 받은 먹이 위치
+@socketio.on('set_food_location')
+def set_food_loc(data):
+    global game
+    game.foodPoint = data['foodPoint']
+
+# socketio로 받은 먹이 위치와 상대 점수
+@socketio.on('set_food_location_score')
+def set_food_loc(data):
+    global game
+    game.foodPoint = data['foodPoint']
+    game.opp_score = data['opp_score']
 
 # snake 페이지에서 필요한 영상 전송
 @app.route('/snake')

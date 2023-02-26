@@ -52,22 +52,21 @@
   </div>
 
   <img id="snake_video" src="" />
-  <div><a>fps : </a><a id="fps"></a></div>
-  <div><a>head_x 좌표 : </a><a id="head_x"></a></div>
-  <div><a>head_y 좌표 : </a><a id="head_y"></a></div>
   <div><a>몸통 리스트 : </a><a id="body_node"></a></div>
+  <div><a>내 점수 : </a><a id="my_score"></a></div>
   <div id="time"></div>
-  <div><a>상대 head_x 좌표 : </a><a id="opp_head_x"></a></div>
-  <div><a>상대 head_y 좌표 : </a><a id="opp_head_y"></a></div>
   <div><a>상대 몸통 리스트 : </a><a id="opp_body_node"></a></div>
   <div><a>상대 스코어 : </a><a id="opp_score"></a></div>
   <div><a>상대 room_id : </a><a id="opp_room_id"></a></div>
   <div><a>상대 sid : </a><a id="opp_sid"></a></div>
   <script>
+    // 서버에서 시간 요청하기
     server_socket.emit("get_time");
+    // 서버에서 받은 시간 페이지에 적용
     server_socket.on("time", function (data) {
       $("#time").html(data["time"]);
     });
+    // 로컬에서 보낸 내 위치 서버에게 보내기
     client_socket.on("game_data", function (data) {
       $("#body_node").text(data["body_node"]);
       server_socket.emit("send_data", {
@@ -75,10 +74,25 @@
         room_id: room_id
       });
     });
+    // 서버에서 받은 상대 위치 내 로컬에 보내기
     server_socket.on("opp_data", function (data) {
       $("#opp_body_node").text(data["opp_body_node"]);
       client_socket.emit("opp_data_transfer", { data: data });
     });
+    // 내가 먹이를 먹은 경우, 서버에게 알리기
+    client_socket.on('user_ate_food', function (data) {
+      $("#my_score").text(data["score"]);
+      server_socket.emit('user_ate_food', {'score':data["score"], 'room_id':room_id});
+    })
+    // 내가 먹이를 먹은 경우, 서버에게 새로운 먹이 위치를 받은 것을 로컬에게 보냄
+    server_socket.on('ate_user', function (data) {
+      client_socket.emit('set_food_location', {'foodPoint':data['foodPoint']});
+    })
+    // 상대가 먹이를 먹은 경우, 서버에게 받은 새 먹이위치와 상대점수 로컬에게 보냄
+    server_socket.on('ate_user_opp', function (data) {
+      $("#opp_score").text(data["opp_score"]);
+      client_socket.emit('set_food_location_score', {'foodPoint':data['foodPoint'], 'opp_score':data['opp_score']});
+    })
   </script>
 </body>
 

@@ -118,10 +118,11 @@ def my_port(data):
         address[room_id] = [ip_addr, port]
 
 # 각 클라이언트에게 음식 좌표와 상대 점수 전송
-@socketio.on('food_and_score')
+@socketio.on('user_ate_food')
 def provide_food_data(data):
     foodPoint=(random.randint(100, 1000), random.randint(100, 600))
-    emit('food_and_score_from_server', {'foodPoint':foodPoint, 'opp_score':data['score']}, broadcast=True, room=data['room_id'])
+    emit('ate_user', {'foodPoint':foodPoint}, to=request.sid)
+    emit('ate_user_opp', {'foodPoint':foodPoint, 'opp_score':data['score']}, room=data['room_id'], include_self=False)
 
 if __name__ == "__main__":
     socketio.run(app, host='0.0.0.0', port=8080)

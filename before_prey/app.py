@@ -303,8 +303,8 @@ class SnakeGameClass:
 
         self.send_data_to_opp(cx, cy)
 
-        if self.isCollision(self.points[-1], o_bodys):
-            self.execute()
+        # if self.isCollision(self.points[-1], o_bodys):
+        #     self.execute()
 
     # 내 뱀이 움직이는 속도 설정
     def set_snake_speed(self, HandPoints, s_speed): 

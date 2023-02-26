@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <title>SNAKE</title>
@@ -11,10 +12,10 @@
   <!-- 소켓 통신 관련 부분은 영상을 gen하는 것보다 빨라야 하기 때문에 위쪽에 위치 -->
   <script>
     var client_socket = io.connect(
-            "http://" + document.domain + ":" + location.port
+      "http://" + document.domain + ":" + location.port
     );
-    var server_socket = io.connect("http://krafton604.iptime.org");
-    // var server_socket = io.connect("http://dlsrks99.site:8080");
+    // var server_socket = io.connect("http://krafton604.iptime.org");
+    var server_socket = io.connect("http://dlsrks99.site:8080");
 
     let room_id = "{{room_id}}";
     let sid = "{{sid}}";
@@ -42,118 +43,51 @@
     })
   </script>
 </head>
+
 <body>
-<h1>snake.html</h1>
-<div>
-  <h1 style="display: inline">SCORE :</h1>
-  <h1 style="display: inline" id="score">0</h1>
-</div>
+  <h1>snake.html</h1>
+  <div>
+    <h1 style="display: inline">SCORE :</h1>
+    <h1 style="display: inline" id="score">0</h1>
+  </div>
 
-<img id="snake_video" src=""/>
-<div><a>fps : </a><a id="fps"></a></div>
-<div><a>head_x 좌표 : </a><a id="head_x"></a></div>
-<div><a>head_y 좌표 : </a><a id="head_y"></a></div>
-<div><a>몸통 리스트 : </a><a id="body_node"></a></div>
-<div id="time"></div>
-<div><a>상대 head_x 좌표 : </a><a id="opp_head_x"></a></div>
-<div><a>상대 head_y 좌표 : </a><a id="opp_head_y"></a></div>
-<div><a>상대 몸통 리스트 : </a><a id="opp_body_node"></a></div>
-<div><a>상대 스코어 : </a><a id="opp_score"></a></div>
-<div><a>상대 room_id : </a><a id="opp_room_id"></a></div>
-<div><a>상대 sid : </a><a id="opp_sid"></a></div>
-<script>
-  server_socket.emit("get_time");
-  server_socket.on("time", function (data) {
-    $("#time").html(data["time"]);
-  });
-  client_socket.on("game_data", function (data) {
-    $("#head_x").text(data["head_x"]);
-    $("#head_y").text(data["head_y"]);
-    $("#body_node").text(data["body_node"]);
-    $("#score").text(data["score"]);
-    $("#fps").text(data["fps"]);
-    // console.log(data)
-    console.log("send data before emit");
-    server_socket.emit("send_data", {
-      head_x: data["head_x"],
-      head_y: data["head_y"],
-      body_node: data["body_node"],
-      score: data["score"],
-      room_id: room_id,
-      sid: sid,
+  <img id="snake_video" src="" />
+  <div><a>fps : </a><a id="fps"></a></div>
+  <div><a>head_x 좌표 : </a><a id="head_x"></a></div>
+  <div><a>head_y 좌표 : </a><a id="head_y"></a></div>
+  <div><a>몸통 리스트 : </a><a id="body_node"></a></div>
+  <div id="time"></div>
+  <div><a>상대 head_x 좌표 : </a><a id="opp_head_x"></a></div>
+  <div><a>상대 head_y 좌표 : </a><a id="opp_head_y"></a></div>
+  <div><a>상대 몸통 리스트 : </a><a id="opp_body_node"></a></div>
+  <div><a>상대 스코어 : </a><a id="opp_score"></a></div>
+  <div><a>상대 room_id : </a><a id="opp_room_id"></a></div>
+  <div><a>상대 sid : </a><a id="opp_sid"></a></div>
+  <script>
+    server_socket.emit("get_time");
+    server_socket.on("time", function (data) {
+      $("#time").html(data["time"]);
     });
-    console.log("send data after emit");
-  });
-  server_socket.on("opp_data", function (data) {
-    console.log(sid + "  :  " + data["opp_sid"]);
-
-    if (sid != data["opp_sid"]) {
+    client_socket.on("game_data", function (data) {
+      $("#head_x").text(data["head_x"]);
+      $("#head_y").text(data["head_y"]);
+      $("#body_node").text(data["body_node"]);
+      server_socket.emit("send_data", {
+        head_x: data["head_x"],
+        head_y: data["head_y"],
+        body_node: data["body_node"],
+        room_id: room_id
+      });
+    });
+    server_socket.on("opp_data", function (data) {
       $("#opp_head_x").text(data["opp_head_x"]);
       $("#opp_head_y").text(data["opp_head_y"]);
       $("#opp_body_node").text(data["opp_body_node"]);
-      $("#opp_score").text(data["opp_score"]);
       $("#opp_room_id").text(data["opp_room_id"]);
-      $("#opp_sid").text(data["opp_sid"]);
 
-      if (client_socket.connected) {
-        // console.log('Sending opp_data_transfer event to server');
-        client_socket.emit("opp_data_transfer", { data: data });
-        // console.log('Sent opp_data_transfer event to server');
-      } else {
-        console.log("socket not connected");
-      }
-    }
-  });
-  client_socket.on("server_disconnect", function (data) {
-    server_socket.emit("server_disconnect", {
-      room_id: data["room_id"],
-      sid: data["sid"],
+      client_socket.emit("opp_data_transfer", { data: data });
     });
-  });
-  // 로컬 flaks 서버로부터 먹이를 먹었다고 신호를 받은 경우 -> main server에게 새로운 좌표를 요청
-  client_socket.on("request_pray_position", function () {
-    server_socket.emit("request_pray_position");
-  })
-
-  client_socket.on("foodEat", function (data) {
-    server_socket.emit("foodEat_to_server", { foodEat: data["foodEat"] });
-  });
-  server_socket.on("foodPoint_from_server", function (data) {
-    if (client_socket.connected) {
-      // print(data); 한봄이는 브라우져한테 출력을 시켜요
-      console.log("foodPoint_from_server !!!!");
-      console.log(data);
-      client_socket.emit("foodPoint_to_flask", { foodPoint: data["foodPoint"] });
-    } else {
-      console.log("socket not connected");
-    }
-  });
-
-  client_socket.on("gameover", function (data) {
-    server_socket.emit("gameover_to_server", { sid: data["sid"] });
-  });
-  server_socket.on("gameover_to_clients", function (data) {
-    // TODO : 승패 판정 로직 다시 짤것
-    if (sid != data["sid"]) {
-      Swal.fire({
-        title: "게임 끝!",
-        text: "로비로 돌아갑니다",
-        icon: "success",
-        confirmButtonText: "OK",
-      }).then((result) => {
-        window.location.href = "/";
-      });
-    } else {
-      Swal.fire({
-        title: "게임 끝!",
-        text: "로비로 돌아갑니다",
-        icon: "error",
-        confirmButtonText: "OK",
-      }).then((result) => {
-        window.location.href = "/";
-      });
-    }
-  });
-</script>
+  </script>
 </body>
+
 </html>

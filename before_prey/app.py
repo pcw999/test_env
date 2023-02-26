@@ -439,8 +439,8 @@ class SnakeGameClass:
                 a += 1
 
         if a != 0:
-            self.is_udp = False
-            print("UDP")
+            self.is_udp = True
+            print("UDP MODE")
 
     # 소멸자 소켓 bind 해제
     def __del__(self):

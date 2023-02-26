@@ -434,7 +434,7 @@ class SnakeGameClass:
             test_code = 'A'
             self.sock.sendto(test_code.encode(), self.opp_addr)
             try:
-                data, result = self.sock.recvfrom(100)
+                data, result = self.sock.recvfrom(1000)
             except socket.timeout:
                 a += 1
 

@@ -441,6 +441,8 @@ class SnakeGameClass:
 
     # 소멸자 소켓 bind 해제
     def __del__(self):
+        global opponent_data
+        opponent_data = {}
         self.sock.close()
 ######################################################################################
 

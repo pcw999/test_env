@@ -303,7 +303,7 @@ class SnakeGameClass:
 
         self.check_snake_eating(cx, cy)
 
-        self.send_data_to_opp(cx, cy)
+        self.send_data_to_opp()
 
         if self.is_udp:
             self.receive_data_from_opp()
@@ -403,12 +403,12 @@ class SnakeGameClass:
         self.opp_addr = (opp_ip, int(opp_port))
     
     # 데이터 전송
-    def send_data_to_opp(self, cx, cy):
+    def send_data_to_opp(self):
         if self.is_udp:
-            data_set = str(cx) + '/' + str(cy) + '/' + str(self.points) + '/' + str(self.score)
+            data_set = str(self.points)
             self.sock.sendto(data_set.encode(), self.opp_addr)
         else:
-            socketio.emit('game_data', {'head_x': cx, 'head_y': cy, 'body_node': self.points})
+            socketio.emit('game_data', {'body_node': self.points})
 
     # 데이터 수신 (udp 통신 일때만 사용)
     def receive_data_from_opp(self):
@@ -420,10 +420,7 @@ class SnakeGameClass:
             if decode_data == 'A':
                 pass
             else:
-                decode_data_list = decode_data.split('/')
-                opponent_data['opp_head_x'] = int(decode_data_list[0])
-                opponent_data['opp_head_y'] = int(decode_data_list[1])
-                opponent_data['opp_body_node'] = eval(decode_data_list[2])
+                opponent_data['opp_body_node'] = eval(decode_data)
         except socket.timeout:
             pass
     

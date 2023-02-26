@@ -69,22 +69,14 @@
       $("#time").html(data["time"]);
     });
     client_socket.on("game_data", function (data) {
-      $("#head_x").text(data["head_x"]);
-      $("#head_y").text(data["head_y"]);
       $("#body_node").text(data["body_node"]);
       server_socket.emit("send_data", {
-        head_x: data["head_x"],
-        head_y: data["head_y"],
         body_node: data["body_node"],
         room_id: room_id
       });
     });
     server_socket.on("opp_data", function (data) {
-      $("#opp_head_x").text(data["opp_head_x"]);
-      $("#opp_head_y").text(data["opp_head_y"]);
       $("#opp_body_node").text(data["opp_body_node"]);
-      $("#opp_room_id").text(data["opp_room_id"]);
-
       client_socket.emit("opp_data_transfer", { data: data });
     });
   </script>

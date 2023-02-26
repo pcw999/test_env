@@ -77,12 +77,10 @@ def handle_join():
 # 서버가 상대의 위치 전송    
 @socketio.on('send_data')
 def send_data(data):
-    head_x = data['head_x']
-    head_y = data['head_y']
     body_node = data['body_node']
     room_id = data['room_id']
 
-    emit('opp_data', {'opp_head_x' : head_x, 'opp_head_y' : head_y, 'opp_body_node' : body_node, 'opp_room_id' : room_id}, broadcast=True, include_self=False, room=room_id)
+    emit('opp_data', {'opp_body_node' : body_node, 'opp_room_id' : room_id}, broadcast=True, include_self=False, room=room_id)
 
 # 서버와 통신 테스트용
 @socketio.on('get_time')

@@ -306,7 +306,7 @@ class SnakeGameClass:
         self.send_data_to_opp(cx, cy)
 
         if self.is_udp:
-            self.receive_data_from_opp
+            self.receive_data_from_opp()
 
         # if self.isCollision(self.points[-1], o_bodys):
         #     self.execute()
@@ -407,6 +407,7 @@ class SnakeGameClass:
         if self.is_udp:
             data_set = str(cx) + '/' + str(cy) + '/' + str(self.points) + '/' + str(self.score)
             self.sock.sendto(data_set.encode(), self.opp_addr)
+            print('send')
         else:
             socketio.emit('game_data', {'head_x': cx, 'head_y': cy, 'body_node': self.points})
 
@@ -427,6 +428,7 @@ class SnakeGameClass:
                 opponent_data['opp_head_y'] = int(decode_data_list[1])
                 opponent_data['opp_body_node'] = eval(decode_data_list[2])
         except socket.timeout:
+            print('error')
             pass
     
     # udp로 통신할지 말지

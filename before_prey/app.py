@@ -305,6 +305,9 @@ class SnakeGameClass:
 
         self.send_data_to_opp(cx, cy)
 
+        if self.is_udp:
+            self.receive_data_from_opp
+
         # if self.isCollision(self.points[-1], o_bodys):
         #     self.execute()
 

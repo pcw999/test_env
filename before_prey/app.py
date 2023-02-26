@@ -211,7 +211,7 @@ class SnakeGameClass:
 
         self.imgFood = cv2.imread(pathFood, cv2.IMREAD_UNCHANGED)
         self.hFood, self.wFood, _ = self.imgFood.shape
-        self.foodPoint = 0, 0
+        self.foodPoint = 640, 360
 
         self.score = 0
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)

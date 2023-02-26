@@ -353,7 +353,7 @@ class SnakeGameClass:
             self.sock.sendto(send_data.encode(), self.opp_addr)
 
             try:
-                data, _ = self.sock.recvfrom(10000)
+                data, _ = self.sock.recvfrom(20000)
                 decode_data = data.decode()
                 decode_data_list = decode_data.split('/')
                 opponent_data['opp_head_x'] = int(decode_data_list[0])

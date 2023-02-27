@@ -23,7 +23,7 @@ waiting_players = [] # 매칭 잡은 유저 목록
 room_of_players = {} # 해당 sid에 할당된 룸
 players_in_room = {} # 해당 room에 존재하는 sid들
 address = {} # 먼저 방에 들어온 사람 주소 (전송을 위해 저장)
-
+ 
 # server test page
 @app.route("/")
 def index():
@@ -123,11 +123,11 @@ def my_port(data):
     emit('my_port', {'my_port':port})
 
     if len(players_in_room[room_id]) == 2:
-        room_of_players[players_in_room[room_id][0]] = room_id
-        room_of_players[players_in_room[room_id][1]] = room_id
+        room_of_players[request.sid] = room_id
         emit('opponent_address', {'ip_addr' : ip_addr, 'port' : port}, broadcast=True, include_self=False, room=room_id)
         emit('opponent_address', {'ip_addr' : address[room_id][0], 'port' : address[room_id][1]}, to=request.sid)
     else:
+        room_of_players[request.sid] = room_id
         address[room_id] = [ip_addr, port]
 
 # 각 클라이언트에게 음식 좌표와 상대 점수 전송

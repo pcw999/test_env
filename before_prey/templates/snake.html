@@ -38,10 +38,6 @@
       console.log(data['ip_addr'], data['port'])
       client_socket.emit('opponent_address', { 'ip_addr': data['ip_addr'], 'port': data['port'], 'sid':sid })
     });
-    // 로컬 falsk 서버에서 상대와 통신이 수립된 이후 영상 로딩
-    // client_socket.on('connection_result', function () {
-    //   $("#snake_video").attr("src", "{{ url_for('snake') }}")
-    // })
   </script>
 </head>
 

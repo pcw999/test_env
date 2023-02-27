@@ -39,6 +39,13 @@ def test_connect():
 # socketio로 서버가 웹페이지와 연결해제된 경우 players_in_room에서 해당 sid 제거
 @socketio.on('disconnect')
 def test_disconnect():
+    global room_of_players
+    global players_in_room
+    
+    room_id = room_of_players[request.sid]
+
+    players_in_room[room_id].remove(request.sid)
+
     ip_addr = request.remote_addr
     port = request.environ['REMOTE_PORT']
     print(f'Client disconnected: {ip_addr}:{port}')

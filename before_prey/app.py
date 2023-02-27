@@ -427,25 +427,26 @@ class SnakeGameClass:
             pass
     
     # udp로 통신할지 말지
-    def test_connect(self):
-        global MY_PORT
+    def test_connect(self, sid):
         a = 0
         b = 0
-        test_code = str(MY_PORT)
+        test_code = str(sid)
 
         for i in range(10):
+            if i % 2 == 0:
+                test_code = str(sid)
             self.sock.sendto(test_code.encode(), self.opp_addr)
             try:
-                data, _ = self.sock.recvfrom(1000)
-                test_code = data.decode()
-                if test_code == str(MY_PORT):
+                data, _ = self.sock.recvfrom(600)
+                test_code = data.decode() 
+                if test_code == str(sid):
                     b += 1
             except socket.timeout:
                 a += 1
 
-        if a != 0 and b != 0:
+        if a != 10 and b != 0:
             self.is_udp = True
-            print("UDP MODE")
+            print(f"UDP MODE / a = {a}, b = {b}")
 
     # 소멸자 소켓 bind 해제
     def __del__(self):
@@ -501,9 +502,10 @@ def set_address(data):
     global game
     opp_ip = data['ip_addr']
     opp_port = data['port']
+    sid = data['sid']
 
     game.set_socket(MY_PORT, opp_ip, opp_port)
-    game.test_connect()
+    game.test_connect(sid)
     socketio.emit('connection_result')
 
 # socketio로 받은 상대방 정보

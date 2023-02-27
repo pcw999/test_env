@@ -1,5 +1,4 @@
-a = '/123/123/123/123/123/123/123/123/'
+import sys
+a = b'asdkfjhglq3t1dhgkjgla23/'
 
-b = a.strip().split('/')
-
-print(b)
+print(sys.getsizeof(a))

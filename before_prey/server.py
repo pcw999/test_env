@@ -70,8 +70,7 @@ def handle_join():
         # 룸 id 할당
         room_id = str(uuid.uuid4())
         # sid에게 들어갈 방 알려줌
-        room_of_players[user1] = room_id
-        room_of_players[user2] = room_id
+
         # 매칭 잡힌 사실 index 페이지에 보내줌
         emit('matched', {'room_id' : room_id, 'sid' : user1}, to=user1)
         emit('matched', {'room_id' : room_id, 'sid' : user2}, to=user2)
@@ -124,6 +123,8 @@ def my_port(data):
     emit('my_port', {'my_port':port})
 
     if len(players_in_room[room_id]) == 2:
+        room_of_players[players_in_room[room_id][0]] = room_id
+        room_of_players[players_in_room[room_id][1]] = room_id
         emit('opponent_address', {'ip_addr' : ip_addr, 'port' : port}, broadcast=True, include_self=False, room=room_id)
         emit('opponent_address', {'ip_addr' : address[room_id][0], 'port' : address[room_id][1]}, to=request.sid)
     else:

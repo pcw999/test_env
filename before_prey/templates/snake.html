@@ -95,6 +95,11 @@
       alert("상대가 떠났습니다.")
       window.location.href = '/'
     })
+    // 상대가 탈주한 경우(udp로 게임하던 중)
+    client_socket.on('opponent_escaped', function() {
+      alert("상대가 떠났습니다.")
+      window.location.href = '/'
+    })
   </script>
 </body>
 

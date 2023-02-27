@@ -220,6 +220,7 @@ class SnakeGameClass:
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.opp_addr = ()
         self.is_udp = False
+        self.udp_count = 0
         self.gameOver = False 
         self.foodOnOff = True
 
@@ -426,10 +427,13 @@ class SnakeGameClass:
             decode_data = data.decode()
             if decode_data[0] == '[':
                 opponent_data['opp_body_node'] = eval(decode_data)
+                self.udp_count = 0
             else:
                 pass
         except socket.timeout:
-            pass
+            self.udp_count += 1
+            if self.udp_count > 100:
+                socketio.emit('opponent_escaped')
     
     # udp로 통신할지 말지
     def test_connect(self, sid):
@@ -512,7 +516,6 @@ def set_address(data):
 
     game.set_socket(MY_PORT, opp_ip, opp_port)
     game.test_connect(sid)
-    socketio.emit('connection_result')
 
 # socketio로 받은 상대방 정보
 @socketio.on('opp_data_transfer')

@@ -1,4 +1,6 @@
 import sys
-a = b'asdkfjhglq3t1dhgkjgla23/'
+a = b'[[[0, 0]]]'
 
-print(sys.getsizeof(a))
+a = a.decode()
+
+print(a[0])

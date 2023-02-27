@@ -444,7 +444,7 @@ class SnakeGameClass:
             except socket.timeout:
                 a += 1
 
-        if a != 10 and b != 0:
+        if a != 50 and b != 0:
             self.is_udp = True
         
         print(f"connection MODE : {self.is_udp} / a = {a}, b = {b}")

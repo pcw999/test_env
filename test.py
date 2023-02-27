@@ -1,13 +1,5 @@
-a = {}
+a = '/123/123/123/123/123/123/123/123/'
 
-room_id = 'asdf'
+b = a.strip().split('/')
 
-if room_id not in a:
-    print('no')
-    a[room_id] = []
-    a[room_id].append(1)
-
-if room_id not in a:
-    print("?")
-else:
-    print(a[room_id])
+print(b)

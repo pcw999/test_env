@@ -428,17 +428,22 @@ class SnakeGameClass:
     
     # udp로 통신할지 말지
     def test_connect(self):
+        global MY_PORT
         a = 0
+        b = 0
+        test_code = str(MY_PORT)
 
         for i in range(10):
-            test_code = 'A'
             self.sock.sendto(test_code.encode(), self.opp_addr)
             try:
-                data, result = self.sock.recvfrom(1000)
+                data, _ = self.sock.recvfrom(1000)
+                test_code = data.decode()
+                if test_code == str(MY_PORT):
+                    b += 1
             except socket.timeout:
                 a += 1
 
-        if a != 0:
+        if a != 0 and b != 0:
             self.is_udp = True
             print("UDP MODE")
 

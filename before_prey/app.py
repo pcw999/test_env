@@ -431,7 +431,7 @@ class SnakeGameClass:
     def test_connect(self, sid):
         a = 0
         b = 0
-        self.sid = sid
+        self.sid = str(sid)
         test_code = str(sid)
 
         for i in range(20):

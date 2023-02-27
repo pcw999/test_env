@@ -216,6 +216,7 @@ class SnakeGameClass:
         self.foodPoint = 640, 360
 
         self.score = 0
+        self.sid = ''
         self.opp_score = 0
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.opp_addr = ()
@@ -419,7 +420,7 @@ class SnakeGameClass:
         try:
             data, _ = self.sock.recvfrom(15000)
             decode_data = data.decode()
-            if decode_data == 'A':
+            if decode_data == str(self.sid):
                 pass
             else:
                 opponent_data['opp_body_node'] = eval(decode_data)
@@ -430,6 +431,7 @@ class SnakeGameClass:
     def test_connect(self, sid):
         a = 0
         b = 0
+        self.sid = sid
         test_code = str(sid)
 
         for i in range(10):

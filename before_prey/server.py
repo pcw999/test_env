@@ -36,9 +36,15 @@ def test_connect():
     port = request.environ['REMOTE_PORT']
     print(f'Client connected: {ip_addr}:{port}')
 
-# socketio로 서버가 웹페이지와 연결해제된 경우
+# socketio로 서버가 웹페이지와 연결해제된 경우 players_in_room에서 해당 sid 제거
 @socketio.on('disconnect')
 def test_disconnect():
+    global room_of_players
+    global players_in_room
+    room_id = room_of_players[request.sid]
+
+    players_in_room[room_id].remove(request.sid)
+
     ip_addr = request.remote_addr
     port = request.environ['REMOTE_PORT']
     print(f'Client disconnected: {ip_addr}:{port}')
@@ -77,10 +83,15 @@ def handle_join():
 # 서버가 상대의 위치 전송    
 @socketio.on('send_data')
 def send_data(data):
+    global players_in_room
+    
     body_node = data['body_node']
     room_id = data['room_id']
 
-    emit('opp_data', {'opp_body_node' : body_node, 'opp_room_id' : room_id}, broadcast=True, include_self=False, room=room_id)
+    if len(players_in_room[room_id]) == 1:
+        emit('opponent_escaped', to=request.sid)
+    else:
+        emit('opp_data', {'opp_body_node' : body_node, 'opp_room_id' : room_id}, broadcast=True, include_self=False, room=room_id)
 
 # 서버와 통신 테스트용
 @socketio.on('get_time')

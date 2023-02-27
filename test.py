@@ -1,6 +1,5 @@
-import sys
-a = b'[[[0, 0]]]'
+pr = {'user1' : ['room1', 'rooom2']}
 
-a = a.decode()
+pr['user1'].remove('room1')
 
-print(a[0])
+print(pr)

@@ -38,9 +38,9 @@
       client_socket.emit('opponent_address', { 'ip_addr': data['ip_addr'], 'port': data['port'], 'sid':sid })
     });
     // 로컬 falsk 서버에서 상대와 통신이 수립된 이후 영상 로딩
-    // client_socket.on('connection_result', function () {
-    //   $("#snake_video").attr("src", " {{ url_for('snake') }}")
-    // })
+    client_socket.on('connection_result', function () {
+      $("#snake_video").attr("src", " {{ url_for('snake') }}")
+    })
   </script>
 </head>
 
@@ -51,7 +51,7 @@
     <h1 style="display: inline" id="score">0</h1>
   </div>
 
-  <img id="snake_video" src="{{ url_for('snake') }}" />
+  <img id="snake_video" src="" />
   <div><a>몸통 리스트 : </a><a id="body_node"></a></div>
   <div><a>내 점수 : </a><a id="my_score"></a></div>
   <div id="time"></div>

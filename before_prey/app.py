@@ -432,7 +432,7 @@ class SnakeGameClass:
         b = 0
         test_code = str(sid)
 
-        for i in range(70):
+        for i in range(50):
             if i % 2 == 0:
                 test_code = str(sid)
             self.sock.sendto(test_code.encode(), self.opp_addr)

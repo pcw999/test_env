@@ -31,6 +31,7 @@
     server_socket.on("my_port", function (data) {
       console.log(data['my_port'])
       client_socket.emit('my_port', { 'my_port': data['my_port'] })
+      $("#snake_video").attr("src", "{{ url_for('snake') }}")
     });
     // 서버에서 받은 상대의 주소를 로컬 flask 서버로 전송
     server_socket.on('opponent_address', function (data) {
@@ -38,9 +39,9 @@
       client_socket.emit('opponent_address', { 'ip_addr': data['ip_addr'], 'port': data['port'], 'sid':sid })
     });
     // 로컬 falsk 서버에서 상대와 통신이 수립된 이후 영상 로딩
-    client_socket.on('connection_result', function () {
-      $("#snake_video").attr("src", " {{ url_for('snake') }}")
-    })
+    // client_socket.on('connection_result', function () {
+    //   $("#snake_video").attr("src", "{{ url_for('snake') }}")
+    // })
   </script>
 </head>
 

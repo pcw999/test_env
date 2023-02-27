@@ -432,7 +432,7 @@ class SnakeGameClass:
                 pass
         except socket.timeout:
             self.udp_count += 1
-            if self.udp_count > 50:
+            if self.udp_count > 25:
                 socketio.emit('opponent_escaped')
     
     # udp로 통신할지 말지

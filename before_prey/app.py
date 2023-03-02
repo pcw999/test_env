@@ -208,6 +208,7 @@ class SnakeGameClass:
         self.previousHead = 0, 0
         self.score = 0
         self.opp_score = 0
+        self.opp_bodys = []
 
         self.speed = 5
         self.minspeed=10
@@ -406,11 +407,11 @@ class SnakeGameClass:
 
         # 0 이면 상대 뱀
         if opponent_data:
-            opp_bodys = opponent_data['opp_body_node']
-        imgMain = self.draw_snakes(imgMain, opp_bodys, 0)
+            self.opp_bodys = opponent_data['opp_body_node']
+        imgMain = self.draw_snakes(imgMain, self.opp_bodys, 0)
 
         # update and draw own snake
-        self.my_snake_update(HandPoints, opp_bodys)
+        self.my_snake_update(HandPoints, self.opp_bodys)
         imgMain = self.draw_Food(imgMain)
         # 1 이면 내 뱀
         imgMain = self.draw_snakes(imgMain, self.points, 1)

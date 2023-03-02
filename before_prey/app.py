@@ -573,7 +573,7 @@ def snake():
                 lmList = hands[0]['lmList']
                 pointIndex = lmList[8][0:2]
 
-            img = game.update(img, opponent_data, pointIndex)
+            img = game.update(img, pointIndex)
 
             # encode the image as a JPEG string
             _, img_encoded = cv2.imencode('.jpg', img)

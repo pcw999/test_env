@@ -327,8 +327,8 @@ class SnakeGameClass:
             self.receive_data_from_opp()
 
         if len(self.points) != 0: #out of range 용 성능 애바면 좀;;
-            print(opp_bodys)
             if self.isCollision(self.points[-1], opp_bodys):
+                print("hit")
                 self.execute()
         else:
             print('point가 텅텅 !')

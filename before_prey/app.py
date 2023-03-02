@@ -198,50 +198,56 @@ yellow = (0, 255, 255) # yellow
 cyan = (255, 255, 0) # cyan
 detector = HandDetector(detectionCon=0.5, maxHands=1)
 
-class SnakeGameClass:
-    # 생성자, class를 선언하면서 기본 변수들을 설정함
-    def __init__(self, pathFood):
-        self.points = []  # all points of the snake
-        self.lengths = []  # distance between each point
-        self.currentLength = 0  # total length of the snake
-        self.allowedLength = 150  # total allowed Length
-        self.previousHead = random.randint(100, 1000), random.randint(100, 600)
 
-        self.speed = 0.1
+class SnakeGameClass:
+    def __init__(self, pathFood):
+        self.points = []
+        self.lengths = []
+        self.currentLength = 0
+        self.allowedLength = 150
+        self.previousHead = 0, 0
+        self.score = 0
+        self.opp_score = 0
+
+        self.speed = 5
+        self.minspeed=10
+        self.maxspeed=math.hypot(1280, 720) / 10
         self.velocityX = random.choice([-1, 0, 1])
-        self.velocityY = random.choice([-1, 0, 1])
+        self.velocityY = random.choice([-1, 1])
 
         self.imgFood = cv2.imread(pathFood, cv2.IMREAD_UNCHANGED)
         self.hFood, self.wFood, _ = self.imgFood.shape
         self.foodPoint = 640, 360
+        self.foodOnOff = True
 
-        self.score = 0
-        self.opp_score = 0
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.opp_addr = ()
         self.is_udp = False
         self.udp_count = 0
-        self.gameOver = False 
-        self.foodOnOff = True
 
-    # ---collision function---
+        self.gameover = False
+
     def ccw(self, p, a, b):
-        vect_sub_ap = [a[0] - p[0], a[1] - p[1]]
-        vect_sub_bp = [b[0] - p[0], b[1] - p[1]]
-        return vect_sub_ap[0] * vect_sub_bp[1] - vect_sub_ap[1] * vect_sub_bp[0]
+        s = p[0] * a[1] + a[0] * b[1] + b[0] * p[1]
+        s -= (p[1] * a[0] + a[1] * b[0] + b[1] * p[0])
+
+        if s > 0 :
+            return 1
+        elif s == 0 :
+            return 0
+        else :
+            return -1
 
     def segmentIntersects(self, p1_a, p1_b, p2_a, p2_b):
         ab = self.ccw(p1_a, p1_b, p2_a) * self.ccw(p1_a, p1_b, p2_b)
         cd = self.ccw(p2_a, p2_b, p1_a) * self.ccw(p2_a, p2_b, p1_b)
 
         if (ab == 0 and cd == 0):
-            if (p1_b[0] < p1_a[0] and p1_b[1] < p1_a[1]):
+            if (p1_a[0] > p1_b[0] or p1_a[1] > p1_b[1]):
                 p1_a, p1_b = p1_b, p1_a
-            if (p2_b[0] < p2_a[0] and p2_b[1] < p2_a[1]):
+            if (p2_a[0] > p2_b[0] or p2_a[1] > p2_b[1]):
                 p2_a, p2_b = p2_b, p2_a
-            return not ((p1_b[0] < p2_a[0] and p1_b[1] < p2_a[1]) or (p2_b[0] < p1_a[0] and p2_b[1] < p1_a[1]))
-
-        return ab <= 0 and cd <= 0
+            return (p2_a[0] <= p1_b[0] and p2_a[1] <= p1_b[1]) and (p1_a[0] <= p2_b[0] and p1_a[1] <= p2_b[1])
 
     def isCollision(self, u1_head_pt, u2_pts):
         if not u2_pts:
@@ -251,49 +257,54 @@ class SnakeGameClass:
         for u2_pt in u2_pts:
             p2_a, p2_b = u2_pt[0], u2_pt[1]
             if self.segmentIntersects(p1_a, p1_b, p2_a, p2_b):
-                print(u2_pt)
+                print(p1_a, p1_b, p2_a, p2_b)
                 return True
         return False
-    # ---collision function---end
 
-    # 뱀을 그려줌 (내꺼, 상대꺼) + 내꺼 그릴때 점수도 표시해줌
-    def draw_snakes(self, imgMain, points, score, isMe):
+    def draw_snakes(self, imgMain, points, isMe):
         bodercolor = cyan
         maincolor = red
 
         if isMe:
             bodercolor = megenta
             maincolor = green
-            # Draw Score
-            cvzone.putTextRect(imgMain, f'Score: {score}', [0, 40],
-                               scale=3, thickness=3, offset=10)
+
+        # Change hue every 100ms
+        change_interval = 100
+
+        hue = int(time.time() * change_interval % 180) # TODO : 마지막에 성능 부족 시 아낄 수 있음
+        rainbow = np.array([hue, 255, 255], dtype=np.uint8)
+        rainbow = cv2.cvtColor(np.array([[rainbow]]), cv2.COLOR_HSV2BGR)[0, 0]
+        # Convert headcolor to tuple of integers
+        rainbow = tuple(map(int, rainbow))
 
         # Draw Snake
-        if points:
-            cv2.circle(imgMain, points[-1][1], 20, bodercolor, cv2.FILLED)
-            cv2.circle(imgMain, points[-1][1], 15, maincolor, cv2.FILLED)
-
+        # TODO : 아이템 먹으면 무지개 색으로 변하게?
         pts = np.array(points, np.int32)
         if len(pts.shape) == 3:
             pts = pts[:, 1]
         pts = pts.reshape((-1, 1, 2))
         cv2.polylines(imgMain, np.int32([pts]), False, maincolor, 15)
 
-        return imgMain
-    
-    # 각 프레임마다 먹이를 그려줌
-    def draw_Food(self, imgMain): 
-        rx, ry = self.foodPoint
-        imgMain = cvzone.overlayPNG(imgMain, self.imgFood, (rx - self.wFood // 2, ry - self.hFood // 2))
+        if points:
+            cv2.circle(imgMain, points[-1][1], 20, bodercolor, cv2.FILLED)
+            cv2.circle(imgMain, points[-1][1], 15, rainbow, cv2.FILLED)
+
         return imgMain
 
-    # 내 뱀 상황 업데이트
-    def my_snake_update(self, HandPoints, o_bodys):
-        global opponent_data
+    def draw_Food(self, imgMain):
+        rx, ry = self.foodPoint
+        socketio.emit('foodPoint', {'food_x': rx, 'food_y': ry})
+        imgMain = cvzone.overlayPNG(imgMain, self.imgFood, (rx - self.wFood // 2, ry - self.hFood // 2))
+
+        return imgMain
+
+    def my_snake_update(self, HandPoints, opp_bodys):
         px, py = self.previousHead
 
         s_speed = 30
         cx, cy = self.set_snake_speed(HandPoints, s_speed)
+        socketio.emit('finger_cordinate', {'head_x': cx, 'head_y': cy})
 
         self.points.append([[px, py], [cx, cy]])
 
@@ -308,26 +319,31 @@ class SnakeGameClass:
             self.check_snake_eating(cx, cy)
 
         self.send_data_to_opp()
+        self.send_data_to_html()
 
         if self.is_udp:
             self.receive_data_from_opp()
 
-        # if self.isCollision(self.points[-1], o_bodys):
-        #     self.execute()
+        if len(self.points) != 0: #out of range 용 성능 애바면 좀;;
+            if self.isCollision(self.points[-1], opp_bodys):
+                self.execute()
+        else:
+            print('point가 텅텅 !')
 
-    # 내 뱀이 움직이는 속도 설정
-    def set_snake_speed(self, HandPoints, s_speed): 
+    def set_snake_speed(self, HandPoints, s_speed):
         px, py = self.previousHead
+        # ----HandsPoint moving ----
+        s_speed = 20
         if HandPoints:
             m_x, m_y = HandPoints
             dx = m_x - px  # -1~1
             dy = m_y - py
 
             # speed 범위: 0~1460
-            if math.hypot(dx, dy) > math.hypot(1280, 720) / 10:
-                self.speed = math.hypot(1280, 720) / 10  # 146
-            elif math.hypot(dx, dy) < s_speed:
-                self.speed = s_speed
+            if math.hypot(dx, dy) > self.maxspeed : # 146
+                self.speed = self.maxspeed
+            elif math.hypot(dx, dy) < self.minspeed:
+                self.speed = self.minspeed
             else:
                 self.speed = math.hypot(dx, dy)
 
@@ -336,17 +352,25 @@ class SnakeGameClass:
             if dy != 0:
                 self.velocityY = dy / 720
 
-            cx = round(px + self.velocityX * self.speed)
-            cy = round(py + self.velocityY * self.speed)
-
         else:
-            self.speed = s_speed
-            cx = round(px + self.velocityX * self.speed)
-            cy = round(py + self.velocityY * self.speed)
-        
+            self.speed = self.minspeed
+
+        cx = round(px + self.velocityX * self.speed)
+        cy = round(py + self.velocityY * self.speed)
+        # ----HandsPoint moving ----end
+        if cx < 0 or cx > 1280 or cy < 0 or cy > 720:
+            if cx < 0: cx = 0
+            if cx > 1280: cx = 1280
+            if cy < 0: cy = 0
+            if cy > 720: cy = 720
+
+        if cx == 0 or cx == 1280:
+            self.velocityX = -self.velocityX
+        if cy == 0 or cy == 720:
+            self.velocityY = -self.velocityY
+
         return cx, cy
-        
-    # 뱀 길이 조정
+
     def length_reduction(self):
         if self.currentLength > self.allowedLength:
             for i, length in enumerate(self.lengths):
@@ -356,61 +380,49 @@ class SnakeGameClass:
 
                 if self.currentLength < self.allowedLength:
                     break
-    
-    # 뱀 식사 여부 확인
+
     def check_snake_eating(self, cx, cy):
         rx, ry = self.foodPoint
-        if (rx - (self.wFood // 2) < cx < rx + (self.wFood // 2)) and (ry - (self.hFood // 2) < cy < ry + (self.hFood // 2)):
+        if (rx - (self.wFood // 2) < cx < rx + (self.wFood // 2)) and (
+                ry - (self.hFood // 2) < cy < ry + (self.hFood // 2)):
             self.allowedLength += 50
             self.score += 1
+
             self.foodOnOff = False
-            socketio.emit('user_ate_food', {'score':self.score})
-    
-    # 뱀이 충돌했을때
+            socketio.emit('user_ate_food', {'score': self.score})
+
     def execute(self):
-        print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Hit")
-        self.gameOver = False
         self.points = []  # all points of the snake
         self.lengths = []  # distance between each point
         self.currentLength = 0  # total length of the snake
         self.allowedLength = 150  # total allowed Length
-        self.previousHead = 0, 0  # previous head point
-    
-    # 송출될 프레임 업데이트
-    def update(self, imgMain, receive_Data, HandPoints=[]):
-        global gameover_flag
 
-        if self.gameOver:
-            gameover_flag = False
-        else:
-            # draw others snake
-            o_body_node = []
-            o_score = 0
+        socketio.emit('gameover')
+        self.gameover = True
+        socketio.emit('gameover')
 
-            if receive_Data:
-                o_body_node = receive_Data["opp_body_node"]
-                o_score = 0 # ^^ 상대 몸길이 받는 로직 추가할 것
+    def update(self, imgMain, HandPoints):
+        global opponent_data
 
-            # 0 이면 상대 뱀
-            imgMain = self.draw_snakes(imgMain, o_body_node, o_score, 0)
+        opp_bodys = []
+        # 0 이면 상대 뱀
+        if opponent_data:
+            opp_bodys = opponent_data['opp_body_node']
+        imgMain = self.draw_snakes(imgMain, opp_bodys, 0)
 
-            # update and draw own snake
-            self.my_snake_update(HandPoints, o_body_node)
-
-            imgMain = self.draw_Food(imgMain)
-
-            # 1 이면 내 뱀
-            imgMain = self.draw_snakes(imgMain, self.points, self.score, 1)
+        # update and draw own snake
+        self.my_snake_update(HandPoints, opp_bodys)
+        imgMain = self.draw_Food(imgMain)
+        # 1 이면 내 뱀
+        imgMain = self.draw_snakes(imgMain, self.points, 1)
 
         return imgMain
-    
-    # 통신 관련 변수 설정
+
     def set_socket(self, my_port, opp_ip, opp_port):
         self.sock.bind(('0.0.0.0', int(my_port)))
-        self.sock.settimeout(0.02)
+        self.sock.settimeout(0.02) # TODO 만약 udp, 서버 선택 오류 시 다시 0.02로
         self.opp_addr = (opp_ip, int(opp_port))
-    
-    # 데이터 전송
+
     def send_data_to_opp(self):
         if self.is_udp:
             data_set = str(self.points)
@@ -418,7 +430,9 @@ class SnakeGameClass:
         else:
             socketio.emit('game_data', {'body_node': self.points})
 
-    # 데이터 수신 (udp 통신 일때만 사용)
+    def send_data_to_html(self):
+        socketio.emit('game_data_for_debug', {'score': self.score, 'fps': fps})
+
     def receive_data_from_opp(self):
         global opponent_data
 
@@ -429,40 +443,42 @@ class SnakeGameClass:
                 opponent_data['opp_body_node'] = eval(decode_data)
                 self.udp_count = 0
             else:
-                pass
+                test_code = decode_data
+                self.sock.sendto(test_code.encode(), self.opp_addr)
         except socket.timeout:
             self.udp_count += 1
             if self.udp_count > 25:
                 socketio.emit('opponent_escaped')
-    
-    # udp로 통신할지 말지
+
     def test_connect(self, sid):
         a = 0
         b = 0
         test_code = str(sid)
 
-        for i in range(50):
+        for i in range(60):
             if i % 2 == 0:
                 test_code = str(sid)
             self.sock.sendto(test_code.encode(), self.opp_addr)
             try:
                 data, _ = self.sock.recvfrom(600)
-                test_code = data.decode() 
+                test_code = data.decode()
                 if test_code == str(sid):
                     b += 1
             except socket.timeout:
                 a += 1
 
-        if a != 50 and b != 0:
+        if a != 60 and b != 0:
             self.is_udp = True
-        
-        print(f"connection MODE : {self.is_udp} / a = {a}, b = {b}")
 
-    # 소멸자 소켓 bind 해제
+        print(f"connection MODE : {self.is_udp} / a = {a}, b = {b}")
+        socketio.emit('NetworkMode', {'UDP': self.is_udp})
+
     def __del__(self):
         global opponent_data
         opponent_data = {}
         self.sock.close()
+
+
 ######################################################################################
 
 # 게임 전역 변수로 선언

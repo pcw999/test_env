@@ -249,6 +249,8 @@ class SnakeGameClass:
             if (p2_a[0] > p2_b[0] or p2_a[1] > p2_b[1]):
                 p2_a, p2_b = p2_b, p2_a
             return (p2_a[0] <= p1_b[0] and p2_a[1] <= p1_b[1]) and (p1_a[0] <= p2_b[0] and p1_a[1] <= p2_b[1])
+        
+        return ab <= 0 and cd <= 0
 
     def isCollision(self, u1_head_pt, u2_pts):
         if not u2_pts:
@@ -258,7 +260,6 @@ class SnakeGameClass:
         for u2_pt in u2_pts:
             p2_a, p2_b = u2_pt[0], u2_pt[1]
             if self.segmentIntersects(p1_a, p1_b, p2_a, p2_b):
-                print(p1_a, p1_b, p2_a, p2_b)
                 return True
         return False
 
@@ -326,6 +327,7 @@ class SnakeGameClass:
             self.receive_data_from_opp()
 
         if len(self.points) != 0: #out of range 용 성능 애바면 좀;;
+            print(opp_bodys)
             if self.isCollision(self.points[-1], opp_bodys):
                 self.execute()
         else:
@@ -398,7 +400,6 @@ class SnakeGameClass:
         self.currentLength = 0  # total length of the snake
         self.allowedLength = 150  # total allowed Length
 
-        socketio.emit('gameover')
         self.gameover = True
         socketio.emit('gameover')
 

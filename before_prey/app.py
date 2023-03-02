@@ -404,7 +404,6 @@ class SnakeGameClass:
     def update(self, imgMain, HandPoints):
         global opponent_data
 
-        opp_bodys = []
         # 0 이면 상대 뱀
         if opponent_data:
             opp_bodys = opponent_data['opp_body_node']

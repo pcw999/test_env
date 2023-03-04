@@ -1238,7 +1238,7 @@ def enter_snake():
     now_my_room = request.args.get('room_id')
     multi.user_number = request.args.get('user_num')
 
-    multi = SnakeGameClass(pathFood)
+    multi = MultiGameClass(pathFood)
 
     return render_template("snake.html", room_id=now_my_room)
 

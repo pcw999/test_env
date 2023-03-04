@@ -377,8 +377,8 @@ class MultiGameClass:
         imgMain = self.draw_snakes(imgMain, self.opp_points, self.opp_score, 0)
 
         # ---head와 handsPoint 점선으로 잇기---
-        for p in np.linspace(self.previousHead, HandPoints, 10):
-            cv2.circle(imgMain, tuple(np.int32(p)), 2, (255, 0, 255), -1)
+        # for p in np.linspace(self.previousHead, HandPoints, 10):
+        #     cv2.circle(imgMain, tuple(np.int32(p)), 2, (255, 0, 255), -1)
 
         self.send_data_to_opp()
 

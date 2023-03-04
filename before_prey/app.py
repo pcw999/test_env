@@ -642,10 +642,10 @@ def enter_snake():
     global now_my_room
     global multi
 
+    multi = MultiGameClass(pathFood)
+
     now_my_room = request.args.get('room_id')
     multi.user_number = request.args.get('user_num')
-
-    multi = MultiGameClass(pathFood)
 
     return render_template("snake.html", room_id=now_my_room)
 

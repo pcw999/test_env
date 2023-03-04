@@ -614,8 +614,6 @@ class MultiGameClass:
 ########################################################################################################################
 ######################################## FLASK APP ROUTINGS ############################################################
 
-game = SnakeGameClass(pathFood)
-
 multi = MultiGameClass(pathFood)
 
 
@@ -844,9 +842,6 @@ def bot_data_update():
                 break
 
 
-single_game = SnakeGameClass(pathFood)
-
-
 # TEST BED ROUTING
 @app.route('/test')
 def test():
@@ -905,39 +900,6 @@ def test():
         single_game.previousHead = cx, cy
 
     return Response(generate(), mimetype='multipart/x-mixed-replace; boundary=frame')
-
-
-# Main Menu Selection
-@app.route('/menu_snake')
-def menu_snake():
-    menu_game = SnakeGameClass(pathFood)
-
-    menu_game.multi = False
-    menu_game.foodOnOff = False
-    menuimg = np.zeros((720, 1280, 3), dtype=np.uint8)
-    menu_game.global_intialize()
-    menu_game.menu_initialize()
-
-    def generate():
-        while True:
-            success, img = cap.read()
-            img = cv2.flip(img, 1)
-            hands = detector.findHands(img, flipType=False)
-            showimg = detector.drawHands(menuimg)
-            pointIndex = []
-
-            if hands:
-                lmList = hands[0]['lmList']
-                pointIndex = lmList[8][0:2]
-
-            showimg = menu_game.update_blackbg(showimg, pointIndex)
-            # encode the image as a JPEG string
-            _, img_encoded = cv2.imencode('.jpg', showimg)
-            yield (b'--frame\r\n'
-                   b'Content-Type: image/jpeg\r\n\r\n' + img_encoded.tobytes() + b'\r\n')
-
-    return Response(generate(), mimetype='multipart/x-mixed-replace; boundary=frame')
-
 
 ########################################################################################################################
 ########################## Legacy Electron Template Routing ############################################################

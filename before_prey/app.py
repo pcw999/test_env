@@ -750,11 +750,13 @@ def snake():
                     if start_cx > 350:
                         start_cx = 70
                         multi.user_move = True
+                        multi.check_collision = True
                 elif multi.user_number == 2:
                     start_cx -= 5
                     if start_cx < 930:
                         start_cx = 1210
                         multi.user_move = True
+                        multi.check_collision = True
 
             img = multi.update(img, pointIndex)
 

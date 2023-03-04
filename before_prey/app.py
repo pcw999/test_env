@@ -645,7 +645,7 @@ def enter_snake():
     multi = MultiGameClass(pathFood)
 
     now_my_room = request.args.get('room_id')
-    multi.user_number = request.args.get('user_num')
+    multi.user_number = int(request.args.get('user_num'))
 
     return render_template("snake.html", room_id=now_my_room)
 
@@ -718,8 +718,6 @@ def snake():
     def generate():
         global multi
 
-        start_cx, start_cy = 0, 0
-
         if multi.user_number == 1:
             start_cx = 100
             start_cy = 360
@@ -728,6 +726,8 @@ def snake():
             start_cx = 1180
             start_cy = 360
             multi.previousHead = (1180, 360)
+        else:
+            start_cx, start_cy = 640, 360
 
         while True:
             success, img = cap.read()
@@ -764,134 +764,6 @@ def snake():
 
             if not multi.gen:
                 break
-
-    return Response(generate(), mimetype='multipart/x-mixed-replace; boundary=frame')
-
-
-########################################################################################################################
-############################### TEST BED FOR GAME LOGIC DEV ############################################################
-
-# SETTING UP VARIABLES AND FUNCTION FOR BOT
-bot_data = {'bot_head_x': 1000,
-            'bot_head_y': 360,
-            'bot_body_node': [],
-            'currentLength': 0,
-            'lengths': [],
-            'bot_velocityX': random.choice([-1, 1]),
-            'bot_velocityY': random.choice([-1, 1])}
-bot_cnt = 0
-
-
-def bot_data_update():
-    global bot_data, bot_cnt
-
-    bot_speed = 10
-    px, py = bot_data['bot_head_x'], bot_data['bot_head_y']
-
-    # 1초 마다 방향 바꾸기
-    # print(bot_cnt)
-    if bot_cnt == 30:
-        bot_data['bot_velocityX'] = random.choice([-1, 0, 1])
-        if bot_data['bot_velocityX'] == 0:
-            bot_data['bot_velocityY'] = random.choice([-1, 1])
-        else:
-            bot_data['bot_velocityY'] = random.choice([-1, 0, 1])
-        bot_cnt = 0
-    bot_cnt += 1
-
-    bot_velocityX = bot_data['bot_velocityX']
-    bot_velocityY = bot_data['bot_velocityY']
-
-    cx = round(px + bot_velocityX * bot_speed)
-    cy = round(py + bot_velocityY * bot_speed)
-
-    if cx < 0 or cx > 1280 or cy < 0 or cy > 720:
-        if cx < 0: cx = 0
-        if cx > 1280: cx = 1280
-        if cy < 0: cy = 0
-        if cy > 720: cy = 720
-
-    if cx == 0 or cx == 1280:
-        bot_data['bot_velocityX'] = -bot_data['bot_velocityX']
-    if cy == 0 or cy == 720:
-        bot_data['bot_velocityY'] = -bot_data['bot_velocityY']
-
-    bot_data['bot_head_x'] = cx
-    bot_data['bot_head_y'] = cy
-    bot_data['bot_body_node'].append([[px, py], [cx, cy]])
-
-    distance = math.hypot(cx - px, cy - py)
-    bot_data['lengths'].append(distance)
-    bot_data['currentLength'] += distance
-
-    socketio.emit('bot_data', {'head_x': cx, 'head_y': cy})
-
-    if bot_data['currentLength'] > 250:
-        for i, length in enumerate(bot_data['lengths']):
-            bot_data['currentLength'] -= length
-            bot_data['lengths'] = bot_data['lengths'][1:]
-            bot_data['bot_body_node'] = bot_data['bot_body_node'][1:]
-
-            if bot_data['currentLength'] < 250:
-                break
-
-
-# TEST BED ROUTING
-@app.route('/test')
-def test():
-    def generate():
-        global bot_data, single_game, gameover_flag, bot_flag, user_move
-        global opponent_data
-        single_game.global_intialize()
-        single_game.testbed_initialize()
-
-        max_time_end = time.time() + 4
-        cx, cy = 200, 360
-        bot_flag = True
-        user_move = False
-        single_game.foodtimeLimit = time.time() + 15  # 10초 제한(앞 5초는 카운트)
-
-        while True:
-            success, img = cap.read()
-            img = cv2.flip(img, 1)
-            hands = detector.findHands(img, flipType=False)
-            img = detector.drawHands(img)
-
-            if not user_move:
-                cx += 1
-                pointIndex = [cx, cy]
-            else:
-                if hands:
-                    lmList = hands[0]['lmList']
-                    pointIndex = lmList[8][0:2]
-
-            bot_data_update()
-            opponent_data['opp_body_node'] = bot_data["bot_body_node"]
-            # print(pointIndex)
-
-            img = single_game.update(img, pointIndex)
-
-            # encode the image as a JPEG string∂
-            _, img_encoded = cv2.imencode('.jpg', img)
-            yield (b'--frame\r\n'
-                   b'Content-Type: image/jpeg\r\n\r\n' + img_encoded.tobytes() + b'\r\n')
-
-            if time.time() > max_time_end:
-                user_move = True
-
-            remain_time = 0
-            if user_move:
-                remain_time = int(single_game.foodtimeLimit - time.time())  # 할일: html에 보내기
-                # print(f"remain_time: {remain_time}")
-                socketio.emit('test_timer', {"seconds": remain_time})
-
-            if gameover_flag or (remain_time < 1 and user_move):
-                print("game ended")
-                gameover_flag = False
-                socketio.emit('gameover')
-                break
-
-        single_game.previousHead = cx, cy
 
     return Response(generate(), mimetype='multipart/x-mixed-replace; boundary=frame')
 

@@ -1,5 +1,9 @@
-a = [20, 30, 40]
+data = {}
 
-a = [50, 60]
+if data['a']:
+    print('a')
 
-print(a)
+data['a'] = 0
+
+if data['a']:
+    print('b')

@@ -1311,6 +1311,8 @@ def snake():
     def generate():
         global multi
 
+        start_cx, start_cy = 0, 0
+
         if multi.user_number == 1:
             start_cx = 100
             start_cy = 360

@@ -68,14 +68,8 @@ api = Api(app)
 # Setting Path to food.png
 pathFood = './static/food.png'
 
-opponent_data = {}  # 상대 데이터 (현재 손위치, 현재 뱀위치)
-gameover_flag = False  # ^^ 게임오버
-bot_flag = False
 now_my_room = ""  # 현재 내가 있는 방
 MY_PORT = 0  # socket_bind를 위한 내 포트 번호
-user_number = 0  # 1p, 2p를 나타내는 번호
-user_move = False
-game_over_for_debug = False
 
 ############################################################ 아마도 자바스크립트로 HTML단에서 처리 예정
 # 배경음악이나 버튼음은 자바스크립트, 게임오버나 스킬 사용 효과음은 파이썬

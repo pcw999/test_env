@@ -25,9 +25,6 @@ from flask import Flask, render_template, Response, request, redirect, url_for, 
 from flask_socketio import SocketIO, emit, join_room
 import socket
 from engineio.payload import Payload
-
-from src.maze_manager import MazeManager
-
 import simpleaudio as sa
 import threading
 import signal
@@ -1521,97 +1518,6 @@ def menu_snake():
             _, img_encoded = cv2.imencode('.jpg', showimg)
             yield (b'--frame\r\n'
                    b'Content-Type: image/jpeg\r\n\r\n' + img_encoded.tobytes() + b'\r\n')
-
-    return Response(generate(), mimetype='multipart/x-mixed-replace; boundary=frame')
-
-
-def create_maze(image_h, image_w, block_rows, block_cols):
-    manager = MazeManager()
-    maze = manager.add_maze(block_rows, block_cols)
-    manager.solve_maze(maze.id, "DepthFirstBacktracker")
-
-    wall_map = np.zeros((image_h, image_w))  # (h,w)
-    block_h = image_h // block_rows
-    block_w = image_w // block_cols
-
-    start = [[], []]
-    end = [[], []]
-    r = 2
-
-    for i in range(block_rows):
-        for j in range(block_cols):
-            if maze.initial_grid[i][j].is_entry_exit == "entry":
-                start = [[j * block_w + 150, i * block_h + 150], [(j + 1) * block_w + 150, (i + 1) * block_h + 150]]
-                wall_map[i * block_h + 10: (i + 1) * block_h - 10, j * block_w + 10: (j + 1) * block_w - 10] = 2
-                # print(f"start in create_maze: {start}")
-            elif maze.initial_grid[i][j].is_entry_exit == "exit":
-                end = [[j * block_w + 150, i * block_h + 150], [(j + 1) * block_w + 150, (i + 1) * block_h + 150]]
-                wall_map[i * block_h + 10: (i + 1) * block_h - 10, j * block_w + 10: (j + 1) * block_w - 10] = 3
-                # print(f"end in create_maze:{end}")
-            if maze.initial_grid[i][j].walls["top"]:
-                if i == 0:
-                    wall_map[i * block_h:i * block_h + r, j * block_w:(j + 1) * block_w] = 1
-                else:
-                    wall_map[i * block_h - r:i * block_h + r, j * block_w:(j + 1) * block_w] = 1
-            if maze.initial_grid[i][j].walls["right"]:
-                wall_map[i * block_h:(i + 1) * block_h, (j + 1) * block_w - r:(j + 1) * block_w + r] = 1
-            if maze.initial_grid[i][j].walls["bottom"]:
-                wall_map[(i + 1) * block_h - r:(i + 1) * block_h + r, j * block_w:(j + 1) * block_w] = 1
-            if maze.initial_grid[i][j].walls["left"]:
-                if j == 0:
-                    wall_map[i * block_h:(i + 1) * block_h, j * block_w:j * block_w + r] = 1
-                else:
-                    wall_map[i * block_h:(i + 1) * block_h, j * block_w - r:j * block_w + r] = 1
-
-    solution_nodes = maze.solution_path
-    mid_goal_h = maze.solution_path[-3][0][0]  # solution path의 출구로부터 2번쨰 노드
-    mid_goal_w = maze.solution_path[-3][0][1]
-    # print(len(solution_nodes))
-    print(mid_goal_h)
-    print(mid_goal_w)
-    mid = [[mid_goal_w * block_w + 150, mid_goal_h * block_h + 150],
-           [(mid_goal_w + 1) * block_w + 150, (mid_goal_h + 1) * block_h + 150]]
-    # wall_map[mid_goal_h * block_h : (mid_goal_h + 1) * block_h , mid_goal_w * block_w :(mid_goal_w + 1) * block_w] = 4
-
-    return start, mid, end, wall_map
-
-
-@app.route('/maze_play')
-def maze_play():
-    def generate():
-        global game
-
-        game.multi = False
-        game.maze_initialize()
-        game.timer_end = time.time() + 120  # 2분 시간제한
-
-        while True:
-            success, img = cap.read()
-            img = cv2.flip(img, 1)
-
-            hands = detector.findHands(img, flipType=False)
-            showimg = detector.drawHands(game.maze_img)  # 무조건 findHands 다음
-
-            pointIndex = []
-            if hands:
-                lmList = hands[0]['lmList']
-                pointIndex = lmList[8][0:2]
-
-            showimg = game.update_mazeVer(showimg, pointIndex)
-
-            # encode the image as a JPEG string
-            _, img_encoded = cv2.imencode('.jpg', showimg)
-            yield (b'--frame\r\n'
-                   b'Content-Type: image/jpeg\r\n\r\n' + img_encoded.tobytes() + b'\r\n')
-
-            remain_time = int(game.timer_end - time.time())  # 할일: html에 보내기
-            # print(f"remain_time: {remain_time}")
-            socketio.emit('maze_timer', {"minutes": remain_time // 60, "seconds": remain_time % 60})
-            print(remain_time)
-            if remain_time < 1:
-                print("game ended")
-                socketio.emit('gameover')
-                break
 
     return Response(generate(), mimetype='multipart/x-mixed-replace; boundary=frame')
 

@@ -1368,9 +1368,9 @@ def set_address(data):
     sid = multi.user_number
 
     # 시연 위해 UDP 연결 비활성화하고 바로 Game Ready Emit
+    multi.set_socket(MY_PORT, opp_ip, opp_port)
+    multi.test_connect(sid)
     socketio.emit('game_ready')
-    # multi.set_socket(MY_PORT, opp_ip, opp_port)
-    # multi.test_connect(sid)
 
 
 # socketio로 받은 상대방 정보

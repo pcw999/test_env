@@ -1087,6 +1087,7 @@ class MultiGameClass:
 
     # 데이터 수신 (udp 통신 일때만 사용)
     def receive_data_from_opp(self):
+        flag = False
         for _ in range(self.recv_cnt):
             try:
                 data, _ = self.sock.recvfrom(15000)
@@ -1106,15 +1107,17 @@ class MultiGameClass:
         q_cnt = len(self.queue)
 
         for i in range(q_cnt // 4):
-            if i == (q_cnt // 4) - 1:
+            if i == (q_cnt // 4) - 1 and i != 0:
                 temp = self.queue.pop(0)
+                flag = True
             else:
                 self.queue.pop(0)
 
         if self.queue:
             temp = self.queue.pop(0)
+            flag = True
 
-        if temp:
+        if flag:
             if temp[0] == '[':
                 self.opp_points = eval(temp)
                 

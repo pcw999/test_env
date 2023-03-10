@@ -931,7 +931,7 @@ class MultiGameClass:
                 except socket.timeout:
                     missing_cnt += 1
 
-        self.con_cnt = (missing_cnt // 5) + 1
+        self.con_cnt = (missing_cnt // 3) + 1
 
         # 상대로 부터 받은 본인 Player Number 카운터가 1보다 클때 UDP 연결
         if self_sid_cnt > 1 and missing_cnt < 26:

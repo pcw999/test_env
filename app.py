@@ -876,7 +876,6 @@ class MultiGameClass:
         self.opp_addr = ()
         self.udp_count = 0
         self.user_number = 0
-        self.recv_cnt = 1
         self.queue = []
 
         self.is_udp = False
@@ -932,10 +931,10 @@ class MultiGameClass:
                 except socket.timeout:
                     missing_cnt += 1
 
-        self.recv_cnt = missing_cnt // 5
+        self.con_cnt = missing_cnt // 5 + 1
 
         # 상대로 부터 받은 본인 Player Number 카운터가 1보다 클때 UDP 연결
-        if self_sid_cnt > 1 and self.recv_cnt < 6:
+        if self_sid_cnt > 1 and missing_cnt < 26:
             # 시연 위해 UDP 연결 비활성화
             self.is_udp = True
             self.sock.settimeout(0.01)
@@ -1087,8 +1086,7 @@ class MultiGameClass:
 
     # 데이터 수신 (udp 통신 일때만 사용)
     def receive_data_from_opp(self):
-        flag = False
-        for _ in range(self.recv_cnt):
+        for _ in range(self.con_cnt):
             try:
                 data, _ = self.sock.recvfrom(15000)
                 decode_data = data.decode()
@@ -1104,20 +1102,16 @@ class MultiGameClass:
                 if self.udp_count > 40:
                     socketio.emit('opponent_escaped')
 
-        q_cnt = len(self.queue)
-
-        for i in range(q_cnt // 4):
-            if i == (q_cnt // 4) - 1:
-                temp = self.queue.pop(0)
-                flag = True
-            else:
+        if len(self.queue) == 0:
+            pass
+        elif len(self.queue) > 4:
+            for _ in range(len(self.queue) // 4):
                 self.queue.pop(0)
-
-        if self.queue and q_cnt > 4 :
             temp = self.queue.pop(0)
-            flag = True
-
-        if flag:
+            if temp[0] == '[':
+                self.opp_points = eval(temp)
+        else:
+            temp = self.queue.pop(0)
             if temp[0] == '[':
                 self.opp_points = eval(temp)
                 
@@ -1208,7 +1202,6 @@ class MultiGameClass:
                 pass
             except BlockingIOError:
                 pass
-
         else:
             socketio.emit('game_data', {'body_node': self.points})
 

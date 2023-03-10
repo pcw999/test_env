@@ -1,0 +1,279 @@
+.countdown-container.hidden {
+    opacity: 0;
+}
+
+::-webkit-scrollbar {
+    display: none;
+}
+
+html {
+    /*height: 100%;*/
+    overflow: hidden;
+}
+
+.retrogrid {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+}
+
+body {
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    background-color: #0d1323;
+    color: white;
+}
+
+.gamesection-container {
+    min-width: 1280px;
+    width: 1280px;
+    margin: auto;
+}
+
+.cam-feed {
+    border-radius: 16px;
+    position: absolute;
+    margin: auto;
+    width: 1280px;
+    height: 720px;
+}
+
+#snake_video {
+    display: none;
+}
+
+.cam-feed-alt {
+    position: absolute;
+    border-radius: 16px;
+    margin: auto;
+    width: 1280px;
+    height: 720px;
+}
+
+.cam-container {
+    display: flex;
+    position: absolute;
+    z-index: 2;
+}
+
+.cam-alt-container {
+    display: flex;
+    position: absolute;
+    z-index: 1;
+}
+
+.wrapper {
+    width: 1280px;
+    height: 100%;
+    border-radius: 16px;
+    margin: auto;
+}
+
+p {
+    display: inline;
+}
+
+.hud-top {
+    height: 160px;
+    padding-top: 60px;
+    text-align: center;
+    z-index: 5;
+    font-size: 1.7em;
+    letter-spacing: -1px;
+    font-family: 'Press Start 2P', cursive;
+}
+
+.myscore {
+    width: 33%;
+    display: inline-block;
+    float: left;
+}
+
+.opponentscore {
+    width: 33%;
+    display: inline-block;
+    float: left;
+}
+
+.timer {
+    width: 33%;
+    display: inline-block;
+}
+
+.camfeed {
+    border-radius: 16px;
+    width: 1280px;
+    height: 720px;
+}
+
+/* 디버그 메뉴 */
+.debug-wrapper {
+    opacity: 0.5;
+    z-index: 10;
+    position: absolute;
+    top: 30px;
+    right: 510px;
+}
+
+.accordion {
+    position: absolute;
+    left: 0;
+    right: 0;
+}
+
+.draggable {
+    cursor: move;
+}
+
+.handle {
+    cursor: pointer;
+}
+
+.accordion-item {
+    width: 400px;
+}
+
+.left-container {
+    width: 20%;
+    height: 100%;
+    border-radius: 16px;
+    background-color: #1D204B;
+    margin: auto;
+}
+
+
+/* ambient */
+@keyframes rotate {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+.ambient {
+    width: 1280px;
+    height: 720px;
+    position: absolute;
+    --size: 1000px;
+    /*--speed: 50s;*/
+    /*--easing: cubic-bezier(0.8, 0.2, 0.2, 0.8);*/
+    filter: blur(calc(var(--size) / 5));
+    /*background-image: linear-gradient(rgba(55, 235, 169, 0.85), #5b37eb);*/
+    /*animation: rotate var(--speed) var(--easing) alternate infinite;*/
+    /*background-image: linear-gradient(rgba(55, 235, 169, 0.85), #5b37eb);*/
+    /*background-color: rgb(255,0,0);*/
+    background-color: rgb(0, 255, 0);
+    z-index: -1;
+    transition: all 0.5s ease-out;
+}
+
+
+/*countdown*/
+.countdown {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.countdown-container {
+    border-radius: 16px;
+    position: absolute;
+    margin: auto;
+    width: 1280px;
+    height: 720px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    overflow: hidden;
+    z-index: 20;
+    transition: opacity 0.5s ease-out;
+    pointer-events: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+.countdown--ended {
+    -webkit-animation: buzz 0.5s;
+    animation: buzz 0.5s;
+}
+
+.countdown:active {
+    transform: scale(1.02);
+}
+
+@-webkit-keyframes buzz {
+    0% {
+        transform: rotate(0);
+    }
+    10%, 30%, 50%, 70%, 90% {
+        transform: rotate(6deg);
+    }
+    20%, 40%, 60%, 80% {
+        transform: rotate(-6deg);
+    }
+    100% {
+        transform: rotate(0);
+    }
+}
+
+@keyframes buzz {
+    0% {
+        transform: rotate(0);
+    }
+    10%, 30%, 50%, 70%, 90% {
+        transform: rotate(6deg);
+    }
+    20%, 40%, 60%, 80% {
+        transform: rotate(-6deg);
+    }
+    100% {
+        transform: rotate(0);
+    }
+}
+
+.countdown--wide {
+    width: 100%;
+    height: 100%;
+    font-family: 'Press Start 2P', cursive;
+    /* font-size: 50vmin; */
+    font-size: 120px;
+    border-radius: 0;
+}
+
+.countdown__fill {
+    border-radius: 16px;
+    display: block;
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    background: #AAAAAA;
+    opacity: 1;
+}
+
+.countdown__digit {
+    width: 100%;
+    text-align: center;
+    text-shadow: -6px -6px 0 black,
+    6px -6px 0 black,
+    -6px 6px 0 black,
+    6px 6px 0 black;
+    color: #AAAAAA;
+    mix-blend-mode: difference;
+}

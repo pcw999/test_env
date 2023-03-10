@@ -38,7 +38,7 @@
       server_socket.emit('user_ready', { 'room_id': room_id })
     })
     server_socket.on('game_start', function () {
-      $("#snake_video").attr("src", "{{ url_for('snake') }}")
+      client_socket.emit('game_start')
     })
   </script>
 </head>

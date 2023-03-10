@@ -1,53 +1,264 @@
 <!DOCTYPE html>
-<html>
-
+<html lang="en">
 <head>
-  <title>Biam.IO</title>
-  <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
-  <!-- custom css -->
-  <link rel="stylesheet" href="{{url_for('static', filename='index.css')}}">
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+    <title>Biam.IO</title>
+    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename= 'assets/bootstrap/css/bootstrap.min.css') }}">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&amp;display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=VT323&amp;display=swap">
+    <link rel="stylesheet" href="{{ url_for('static', filename= 'assets/index.css') }}">
+    <script src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.6.0/socket.io.min.js"></script>
+    <script>
+        const modem = new Audio("{{ url_for('static', filename= 'bgm/modem.mp3') }}");
+        const connected_alert = new Audio("{{ url_for('static', filename= 'bgm/connect.mp3') }}");
+
+        $(document).ready(function () {
+        // Connect to the server
+        // var server_socket = io.connect('http://krafton604.iptime.org');
+        var server_socket = io.connect('http://dlsrks99.site:8080');
+
+        // Handle reset button click event
+        $('#joinButton').click(function (event) {
+            server_socket.emit('join');
+        });
+
+        server_socket.on('waiting', function (data) {
+            modem.play()
+            $('#matching').css("display","block");
+            console.log("waiting...")
+            $("#isMatched").text("waiting...");
+        });
+
+        server_socket.on('matched', function (data) {
+            console.log("matched!");
+            $("#isMatched").text("matched!!!");
+            $("#alarm").text("user : " + data['user_number'] + " entered room : " + data['room_id']);
+        });
+
+        server_socket.on('start-game', function (data) {
+            let url = '/enter_snake?room_id=' + data['room_id'] + '&user_num=' + data['user_number'];
+            window.location.href = url;
+        });
+    });
+    </script>
 </head>
 
 <body>
-  <h1>Biam.IO</h1>
-  <img class="roomfit" src="static/dabcat.png" style="border-radius: 30px;width: 300px;height: 300px;" />
-  <p><br>RoomFit에 X를 눌러 조의를 표하세요</p>
-  <button id="joinButton">게임 입장</button>
-  <h2 id="isMatched"></h2>
-  <h2 id="alarm"></h2>
-  <script src="//code.jquery.com/jquery-1.11.1.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.6.0/socket.io.min.js"></script>
-  <script>
-    $(document).ready(function () {
-      // Connect to the server
-      // var socket = io.connect('http://krafton604.iptime.org');
-      var socket = io.connect('http://dlsrks99.site:8080');
+<div id = "matching" class="draggable">
+    <div class = "handle" style="z-index: inherit">
+        <img style="z-index: inherit" src="{{ url_for('static', filename= 'images/lan-modem.gif') }}">
+    </div>
+</div>
+<script>
+    const matching_popup = document.querySelectorAll('.draggable');
 
-      // Handle reset button click event
-      $('#joinButton').click(function (event) {
-        socket.emit('join');
-      });
+    // add event listeners to accordion headers
+    matching_popup.forEach(accordion => {
+        const handle = accordion.querySelector('.handle');
+        let isDragging = false;
+        let startPosX, startPosY, currentPosX, currentPosY;
 
-      socket.on('waiting', function(data) {
-        console.log("waiting...")
-        $("#isMatched").text("waiting...");
-        $("#alarm").text("user : " + data['sid']);
-      });
+        // handle mousedown event
+        handle.addEventListener('mousedown', event => {
+            event.preventDefault();
+            isDragging = true;
+            startPosX = event.clientX;
+            startPosY = event.clientY;
+            currentPosX = accordion.offsetLeft;
+            currentPosY = accordion.offsetTop;
+            accordion.style.zIndex = 1;
+        });
 
-      socket.on('matched', function(data) {
-        console.log("matched!");
-        $("#isMatched").text("matched!!!");
-        $("#alarm").text("user : " + data['sid'] + " entered room : " + data['room_id']);
-      });
-      
-      socket.on('start-game', function(data) {
-        let url = '/enter_snake?room_id=' + data['room_id'] + '&sid=' + data['sid'];
-        window.location.href = url;
-      });
+        // handle mousemove event
+        document.addEventListener('mousemove', event => {
+            if (isDragging) {
+                const deltaX = event.clientX - startPosX;
+                const deltaY = event.clientY - startPosY;
+                accordion.style.left = `${currentPosX + deltaX}px`;
+                accordion.style.top = `${currentPosY + deltaY}px`;
+            }
+        });
+
+        // handle mouseup event
+        document.addEventListener('mouseup', event => {
+            isDragging = false;
+            accordion.style.zIndex = 0;
+        });
     });
-  </script>
+</script>
+
+<audio id="hover-sound">
+    <source src="{{ url_for('static', filename= 'bgm/curSelect.wav') }}" type="audio/wav">
+</audio>
+
+<audio id="bgm" autoplay loop>
+    <source src="{{ url_for('static', filename= 'bgm/menu_bgm.mp3') }}" type="audio/mpeg">
+</audio>
+<script>
+    document.getElementById('bgm').addEventListener('ended', function () {
+        this.currentTime = 0;
+    }, false);
+</script>
+
+<div class="retrogrid">
+    <canvas></canvas>
+</div>
+
+<section class="wrapper">
+    <div class="titlebutton-container">
+        <button style="z-index: 7;" class="glowing-btn"><span class="glowing-txt">Biam.<span
+                class="faulty-letter">IO</span></span>
+        </button>
+
+    </div>
+    <div class="gamesection-container">
+        <div class="cam-container">
+            <img class="cam-feed" id="snake_video" src="{{ url_for('menu_snake') }}" onload="showImage()">
+            <script>
+                function showImage() {
+                    document.getElementById("snake_video").style.display = "block";
+                }
+            </script>
+        </div>
+        <div class="cam-alt-container">
+            <img class="cam-feed-alt" src="{{ url_for('static', filename= 'images/placeholder.png') }}">
+        </div>
+        <div class="menu-container">
+            <div class="menu">
+                <a href="{{ url_for('testbed') }}" class="menu1" id="singleButton">Single Play</a>
+                <a href="#" class="menu2" id="joinButton">Multi Play</a>
+                <a href="{{ url_for('mazerunner') }}" class="menu3" id="mazeButton">Maze Runner</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div class="match-debug" style="z-index: 20; position: absolute; left: 320px; bottom: 15px; visibility: hidden;">
+    <h2 id="isMatched">Matching Status</h2>
+    <h2 id="alarm">USER ID</h2>
+</div>
+
+<script>
+    var client_socket = io.connect(
+        "http://" + document.domain + ":" + location.port
+    );
+    client_socket.on('selected_menu_type', function (data) {
+        console.log(data['menu_type'])
+        if (data['menu_type'] == 1) {
+            document.getElementById('joinButton').click();
+        }
+        if (data['menu_type'] == 2) {
+            document.getElementById('singleButton').click();
+        }
+        if (data['menu_type'] == 3) {
+            document.getElementById('mazeButton').click();
+        }
+    });
+</script>
+<script>
+    const hoverSound = document.getElementById('hover-sound');
+
+    const links = document.querySelectorAll('a');
+
+    links.forEach(link => {
+        link.addEventListener('mouseenter', () => {
+            hoverSound.currentTime = 0;
+            hoverSound.play();
+        });
+    });
+</script>
+<script>
+    let canvas = document.querySelector('canvas');
+    let c = canvas.getContext('2d');
+
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    window.addEventListener('resize', () => {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+    });
+
+    let HorizontalArray = [];
+
+    function Horizontal(y) {
+        this.y = y;
+        this.dy = 0.5;
+        this.opacity = 0;
+
+        this.draw = () => {
+            c.beginPath();
+            c.lineWidth = 5;
+            c.strokeStyle = `rgba(255, 0, 255, ${this.opacity})`;
+            c.moveTo(0, this.y);
+            c.lineTo(canvas.width, this.y);
+            c.stroke();
+        }
+
+        this.update = () => {
+            if (this.y >= canvas.height) {
+                HorizontalArray.splice(HorizontalArray.indexOf(this), 1);
+            }
+
+            this.opacity += 0.003;
+
+            this.dy += 0.05;
+            this.y += this.dy;
+            this.draw();
+        }
+    }
+
+    let grad = c.createLinearGradient(0, canvas.height, 0, 0);
+    grad.addColorStop("0", "rgba(255, 0, 255, 0.5)");
+    grad.addColorStop("0.55", "rgba(255, 0, 255, 0)");
+    grad.addColorStop("1.0", "rgba(255, 0, 255, 0)");
+    let VerticalArray = [];
+
+    function Vertical(x) {
+        this.x = x;
+
+        this.draw = () => {
+            c.beginPath();
+            c.lineWidth = 5;
+            c.strokeStyle = grad;
+            c.moveTo(canvas.width / 2, 200);
+            c.lineTo(this.x, canvas.height);
+            c.stroke();
+        }
+
+        this.update = () => {
+            this.draw();
+        }
+    }
+
+    let interval = (canvas.width / 10);
+    let cross = 0 - interval * 8;
+    for (let i = 0; i < 27; i++) {
+        VerticalArray.push(new Vertical(cross));
+        cross += interval;
+    }
+
+    setInterval(() => {
+        HorizontalArray.push(new Horizontal(canvas.height / 2));
+    }, 300);
+
+    function animate() {
+        requestAnimationFrame(animate);
+        c.clearRect(0, 0, canvas.width, canvas.height);
+
+        for (let i = 0; i < HorizontalArray.length; i++) {
+            HorizontalArray[i].update();
+        }
+        for (let i = 0; i < VerticalArray.length; i++) {
+            VerticalArray[i].update();
+        }
+    }
+
+    animate();
+</script>
 </body>
 
 </html>

@@ -1113,9 +1113,10 @@ class MultiGameClass:
 
         if self.queue:
             temp = self.queue.pop(0)
-            
-        if temp[0] == '[':
-            self.opp_points = eval(temp)
+
+        if temp:
+            if temp[0] == '[':
+                self.opp_points = eval(temp)
                 
             
     def draw_triangle(self, point, point2, size):

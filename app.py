@@ -1107,13 +1107,13 @@ class MultiGameClass:
         q_cnt = len(self.queue)
 
         for i in range(q_cnt // 4):
-            if i == (q_cnt // 4) - 1 and i != 0:
+            if i == (q_cnt // 4) - 1:
                 temp = self.queue.pop(0)
                 flag = True
             else:
                 self.queue.pop(0)
 
-        if self.queue:
+        if self.queue and q_cnt > 4 :
             temp = self.queue.pop(0)
             flag = True
 
@@ -1202,7 +1202,13 @@ class MultiGameClass:
     def send_data_to_opp(self):
         if self.is_udp:
             data_set = str(self.points)
-            self.sock.sendto(data_set.encode(), self.opp_addr)
+            try:
+                self.sock.sendto(data_set.encode(), self.opp_addr)
+            except socket.timeout:
+                pass
+            except BlockingIOError:
+                pass
+
         else:
             socketio.emit('game_data', {'body_node': self.points})
 

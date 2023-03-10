@@ -1105,10 +1105,15 @@ class MultiGameClass:
 
         q_cnt = len(self.queue)
 
-        for _ in range(q_cnt // 4):
-            self.queue.pop(0)
+        for i in range(q_cnt // 4):
+            if i == (q_cnt // 4) - 1:
+                temp = self.queue.pop(0)
+            else:
+                self.queue.pop(0)
 
-        temp = self.queue.pop(0)
+        if self.queue:
+            temp = self.queue.pop(0)
+            
         if temp[0] == '[':
             self.opp_points = eval(temp)
                 
